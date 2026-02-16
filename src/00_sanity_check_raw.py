@@ -1,8 +1,24 @@
+"""
+Sanity check raw Olist CSV files.
+
+This script does NOT transform data.
+It verifies:
+- expected raw source files exist
+- files can be read by pandas
+- prints row/col counts and inferred dtypes
+
+Run from repo root:
+    python src/00_sanity_check_raw.py
+"""
+
 from pathlib import Path
+import sys
 import pandas as pd
 
-RAW = Path("data/raw")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+RAW = REPO_ROOT / "data" / "raw"
 
+# Pipeline file validation
 FILES = [
     "olist_orders_dataset.csv",
     "olist_order_items_dataset.csv",
@@ -15,18 +31,26 @@ FILES = [
     "product_category_name_translation.csv",
 ]
 
-def main():
+def main() -> None:
+    # build a list of missing files in the repo
     missing = [f for f in FILES if not (RAW / f).exists()]
     if missing:
-        raise SystemExit(
-            "Missing files in data/raw:\n- " + "\n- ".join(missing)
-        )
+        msg = "Missing files in data/raw:\n- " + "\n- ".join(missing)
+        raise SystemExit(msg)
 
     for f in FILES:
+        # load file into memory
         path = RAW / f
-        df = pd.read_csv(path)
+        try:
+            df = pd.read_csv(path)
+        except Exception as exc:
+            raise SystemExit(f"Failed to read {path}:\n{exc}") from exc
+
+        # print output shape
         print(f"\n{f}")
         print(f"rows={len(df):,} cols={df.shape[1]:,}")
+
+        #print inferred data types
         print(df.dtypes)
 
 if __name__ == "__main__":
