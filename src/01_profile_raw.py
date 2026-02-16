@@ -94,7 +94,8 @@ def profile_csv(filename: str) -> dict:
 def main() -> None:
     """Profile all raw CSVs and write consolidated report."""
     rows = []
-
+    out_path = OUT / "raw_profile.csv"
+    
     for f in FILES:
         try:
             rows.append(profile_csv(f))
