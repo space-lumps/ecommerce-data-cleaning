@@ -15,7 +15,10 @@ from pathlib import Path
 import sys
 import pandas as pd
 
+# Anchor execution to repo root (independent of working directory)
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+# Immutable input data
 RAW = REPO_ROOT / "data" / "raw"
 
 # Pipeline file validation
