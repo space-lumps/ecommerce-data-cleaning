@@ -1,3 +1,15 @@
+# Virtual environment
+.venv/
 
-# Data
-/data/
+# Raw data (large Kaggle files)
+data/raw/
+
+# Interim processing files
+data/interim/
+
+# OS files
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
