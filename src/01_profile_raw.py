@@ -16,7 +16,6 @@ Why this step exists:
 from pathlib import Path
 import pandas as pd
 
-
 # -------------------------
 # Directory configuration
 # -------------------------
@@ -37,15 +36,15 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # Explicit list keeps profiling deterministic and auditable
 FILES = [
-	"olist_orders_dataset.csv",
-	"olist_order_items_dataset.csv",
-	"olist_order_payments_dataset.csv",
-	"olist_order_reviews_dataset.csv",
-	"olist_products_dataset.csv",
-	"olist_customers_dataset.csv",
-	"olist_sellers_dataset.csv",
-	"olist_geolocation_dataset.csv",
-	"product_category_name_translation.csv",
+    "olist_orders_dataset.csv",
+    "olist_order_items_dataset.csv",
+    "olist_order_payments_dataset.csv",
+    "olist_order_reviews_dataset.csv",
+    "olist_products_dataset.csv",
+    "olist_customers_dataset.csv",
+    "olist_sellers_dataset.csv",
+    "olist_geolocation_dataset.csv",
+    "product_category_name_translation.csv",
 ]
 
 
@@ -54,24 +53,24 @@ FILES = [
 # -------------------------
 
 def profile_csv(filename: str) -> dict:
-	"""
-	Read a CSV file and return basic structural metadata.
+    """
+    Read a CSV file and return basic structural metadata.
 
-	Parameters:
-	- filename: name of CSV file in data/raw
+    Parameters:
+    - filename: name of CSV file in data/raw
 
-	Returns:
-	- dictionary with row count, column count, and column names
-	"""
-	path = RAW / filename
-	df = pd.read_csv(path)
+    Returns:
+    - dictionary with row count, column count, and column names
+    """
+    path = RAW / filename
+    df = pd.read_csv(path)
 
-	return {
-		"file": filename,
-		"rows": int(len(df)),
-		"cols": int(df.shape[1]),
-		"columns": ",".join(df.columns),
-	}
+    return {
+        "file": filename,
+        "rows": int(len(df)),
+        "cols": int(df.shape[1]),
+        "columns": ",".join(df.columns),
+    }
 
 
 # -------------------------
@@ -79,18 +78,18 @@ def profile_csv(filename: str) -> dict:
 # -------------------------
 
 def main():
-	"""
-	Profile all raw CSVs and write a consolidated report to disk.
-	"""
-	rows = [profile_csv(f) for f in FILES]
+    """
+    Profile all raw CSVs and write a consolidated report to disk.
+    """
+    rows = [profile_csv(f) for f in FILES]
 
-	out_path = OUT / "raw_profile.csv"
+    out_path = OUT / "raw_profile.csv"
 
-	# Convert list of dictionaries into a tabular report
-	pd.DataFrame(rows).to_csv(out_path, index=False)
+    # Convert list of dictionaries into a tabular report
+    pd.DataFrame(rows).to_csv(out_path, index=False)
 
-	print(f"Wrote {out_path}")
+    print(f"Wrote {out_path}")
 
 
 if __name__ == "__main__":
-	main()
+    main()
