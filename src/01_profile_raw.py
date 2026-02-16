@@ -1,40 +1,46 @@
 """
-Profile raw Olist CSV files and record basic structural metadata.
+Profile raw Olist CSV files and record structural metadata.
 
 This script does NOT transform data.
-Its purpose is to document:
+
+It documents:
 - row counts
 - column counts
 - column names
+- inferred dtypes
 
-Why this step exists:
-- to understand dataset shape before cleaning
-- to catch schema inconsistencies early
-- to produce an auditable artifact reviewers can inspect
+Purpose:
+- understand dataset shape before cleaning
+- detect schema inconsistencies early
+- generate an auditable artifact for review
+
+Output:
+- reports/raw_profile.csv
 """
 
 from pathlib import Path
 import pandas as pd
 
+
 # -------------------------
 # Directory configuration
 # -------------------------
 
-# Raw, immutable input data
-RAW = Path("data/raw")
+# Anchor execution to repo root (independent of working directory)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Output location for profiling artifacts (reports, not datasets)
-OUT = Path("reports")
+# Immutable input data
+RAW = REPO_ROOT / "data" / "raw"
 
-# Ensure reports directory exists so script is re-runnable
+# Profiling output location
+OUT = REPO_ROOT / "reports"
 OUT.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------
-# Source file list
+# Deterministic source list
 # -------------------------
 
-# Explicit list keeps profiling deterministic and auditable
 FILES = [
     "olist_orders_dataset.csv",
     "olist_order_items_dataset.csv",
@@ -54,22 +60,30 @@ FILES = [
 
 def profile_csv(filename: str) -> dict:
     """
-    Read a CSV file and return basic structural metadata.
-
-    Parameters:
-    - filename: name of CSV file in data/raw
+    Read a CSV file and return structural metadata.
 
     Returns:
-    - dictionary with row count, column count, and column names
+        dict with file name, row count, column count,
+        column list, and inferred dtypes.
     """
     path = RAW / filename
-    df = pd.read_csv(path)
+
+    try:
+        df = pd.read_csv(path)
+    except Exception as exc:
+        raise SystemExit(f"Failed to read {path}:\n{exc}") from exc
+
+    # Serialize dtypes as: "col:type|col:type|..."
+    dtypes_str = "|".join(
+        f"{col}:{dtype}" for col, dtype in df.dtypes.items()
+    )
 
     return {
         "file": filename,
         "rows": int(len(df)),
         "cols": int(df.shape[1]),
         "columns": ",".join(df.columns),
+        "dtypes": dtypes_str,
     }
 
 
@@ -77,19 +91,24 @@ def profile_csv(filename: str) -> dict:
 # Pipeline entry point
 # -------------------------
 
-def main():
-    """
-    Profile all raw CSVs and write a consolidated report to disk.
-    """
-    rows = [profile_csv(f) for f in FILES]
+def main() -> None:
+    """Profile all raw CSVs and write consolidated report."""
+    rows = []
 
-    out_path = OUT / "raw_profile.csv"
+    for f in FILES:
+        try:
+            rows.append(profile_csv(f))
+        except Exception as exc:
+            rows.append({
+                "file": f,
+                "rows": None,
+                "cols": None,
+                "columns": None,
+                "dtypes": None,
+                "error": str(exc),
+            })
 
-    # Convert list of dictionaries into a tabular report
     pd.DataFrame(rows).to_csv(out_path, index=False)
-
-    print(f"Wrote {out_path}")
-
 
 if __name__ == "__main__":
     main()
