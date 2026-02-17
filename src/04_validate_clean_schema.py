@@ -8,9 +8,9 @@ Output:
 - reports/clean_schema_audit.csv
 
 Checks:
-- string_cols are pandas string dtype
+- string_cols are pandas str dtype
 - datetime_cols are datetime64 dtype
-- numeric_cols are not object/string (float/int ok)
+- numeric_cols are not object/str (float/int ok)
 """
 
 from pathlib import Path
@@ -38,11 +38,11 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 def dtype_family(dtype) -> str:
     s = str(dtype)
-    if s == "string":
-        return "string"
+    if s == "str":
+        return "str"
     if s.startswith("datetime64"):
         return "datetime"
-    if s in ("int64", "float64", "Int64", "Float64"):
+    if s in ("int64", "float64", "Int64", "Float64", "int32", "float32"):
         return "numeric"
     if s == "object":
         return "object"
@@ -62,10 +62,10 @@ def main() -> None:
 
         for col in rules.get("string_cols", []):
             if col not in df.columns:
-                rows.append({"file": filename, "column": col, "expected": "string", "actual": "missing", "pass": False})
+                rows.append({"file": filename, "column": col, "expected": "str", "actual": "missing", "pass": False})
                 continue
             actual = dtype_family(df[col].dtype)
-            rows.append({"file": filename, "column": col, "expected": "string", "actual": actual, "pass": actual == "string"})
+            rows.append({"file": filename, "column": col, "expected": "str", "actual": actual, "pass": actual == "str"})
 
         for col in rules.get("datetime_cols", []):
             if col not in df.columns:

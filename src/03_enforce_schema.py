@@ -105,7 +105,7 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
 
     for col in rules.get("string_cols", []):
         if col in df.columns:
-            df[col] = df[col].astype("string")
+            df[col] = df[col].astype("str")
 
     for col in rules.get("datetime_cols", []):
         if col in df.columns:
