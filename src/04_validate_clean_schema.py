@@ -24,7 +24,7 @@ _spec = importlib.util.spec_from_file_location(
     Path(__file__).resolve().parent / "03_enforce_schema.py",
 )
 if _spec is None or _spec.loader is None:
-	raise SystemExit("Failed to load 03_enforce_schema.py via importlib")
+    raise SystemExit("Failed to load 03_enforce_schema.py via importlib")
 _enforce = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_enforce)
 CAST_RULES = _enforce.CAST_RULES
