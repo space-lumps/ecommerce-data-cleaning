@@ -16,9 +16,10 @@ from __future__ import annotations
 from pathlib import Path
 import re
 import pandas as pd
+from utils.io import repo_root, write_csv
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 CLEAN = REPO_ROOT / "data" / "clean"
 OUT = REPO_ROOT / "reports"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -111,8 +112,9 @@ def main() -> None:
     full_path = OUT / "clean_dtypes_full.csv"
     flags_path = OUT / "clean_dtypes_flags.csv"
 
-    pd.DataFrame(full_rows).to_csv(full_path, index=False)
-    pd.DataFrame(flag_rows).to_csv(flags_path, index=False)
+    write_csv(pd.DataFrame(full_rows), full_path)
+    write_csv(pd.DataFrame(flag_rows), flags_path)
+
 
     print(f"Wrote {full_path} (rows={len(full_rows)})")
     print(f"Wrote {flags_path} (flags={len(flag_rows)})")

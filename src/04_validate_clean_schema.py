@@ -16,6 +16,8 @@ Checks:
 from pathlib import Path
 import importlib.util
 import pandas as pd
+from utils.io import repo_root, write_csv
+
 
 # workaround for module import:
 # 03_enforce_schema cannot be imported directly since python does not allow importing modules beginning with a number
@@ -30,7 +32,7 @@ _spec.loader.exec_module(_enforce)
 CAST_RULES = _enforce.CAST_RULES
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 CLEAN = REPO_ROOT / "data" / "clean"
 OUT = REPO_ROOT / "reports"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -83,7 +85,7 @@ def main() -> None:
             rows.append({"file": filename, "column": col, "expected": "numeric", "actual": actual, "pass": actual == "numeric"})
 
     out_path = OUT / "clean_schema_audit.csv"
-    pd.DataFrame(rows).to_csv(out_path, index=False)
+    write_csv(pd.DataFrame(rows), out_path)
 
     fails = sum(1 for r in rows if r.get("pass") is False)
     print(f"Wrote {out_path} (fails={fails})")

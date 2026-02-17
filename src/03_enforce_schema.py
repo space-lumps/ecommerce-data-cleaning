@@ -13,9 +13,10 @@ Policy:
 
 from pathlib import Path
 import pandas as pd
+from utils.io import repo_root, read_parquet, write_parquet
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 INTERIM = REPO_ROOT / "data" / "interim"
 CLEAN = REPO_ROOT / "data" / "clean"
 CLEAN.mkdir(parents=True, exist_ok=True)
@@ -137,7 +138,7 @@ def main() -> None:
             raise SystemExit(f"Failed to enforce schema for {filename}:\n{exc}") from exc
 
         try:
-            df.to_parquet(out_path, index=False)
+            write_parquet(df, out_path)
         except Exception as exc:
             raise SystemExit(f"Failed to write {out_path}:\n{exc}") from exc
 
