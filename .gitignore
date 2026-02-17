@@ -7,6 +7,9 @@ data/raw/
 # Interim processing files
 data/interim/
 
+# Cleaned data (files are still large)
+data/clean/
+
 # OS files
 .DS_Store
 
