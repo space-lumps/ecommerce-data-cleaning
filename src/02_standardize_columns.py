@@ -20,11 +20,14 @@ import pandas as pd
 # Directory configuration
 # -------------------------
 
-# Raw, immutable input data (from Kaggle)
-RAW = Path("data/raw")
+# Anchor execution to repo root (independent of working directory)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+# Immutable input data
+RAW = REPO_ROOT / "data" / "raw"
 
 # Lightly cleaned outputs (still one file per source table)
-INTERIM = Path("data/interim")
+INTERIM = REPO_ROOT / "data" / "interim"
 
 # Ensure the interim directory exists so the script is re-runnable
 INTERIM.mkdir(parents=True, exist_ok=True)
@@ -79,28 +82,33 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
 # Pipeline entry point
 # -------------------------
 
-def main():
+def main() -> None:
     """
     Read each raw CSV, standardize column names, and write to Parquet.
 
     One output file is written per input file.
-    This preserves table boundaries for downstream modeling.
     """
+    # Failure policy:
+    # - Strict in this stage because it produces pipeline inputs for downstream steps.
+    # - If any table fails to read/write, we stop to avoid partial/invalid interim state.
+
     for filename in FILES:
         in_path = RAW / filename
         out_path = INTERIM / filename.replace(".csv", ".parquet")
 
-        # Load raw CSV
-        df = pd.read_csv(in_path)
+        try:
+            df = pd.read_csv(in_path)
+        except Exception as exc:
+            raise SystemExit(f"Failed to read {in_path}:\n{exc}") from exc
 
-        # Normalize column names only
         df = standardize_columns(df)
 
-        # Write optimized, typed columnar output
-        df.to_parquet(out_path, index=False)
+        try:
+            df.to_parquet(out_path, index=False)
+        except Exception as exc:
+            raise SystemExit(f"Failed to write {out_path}:\n{exc}") from exc
 
         print(f"Wrote {out_path}")
-
 
 if __name__ == "__main__":
     main()
