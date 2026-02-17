@@ -11,15 +11,17 @@ Policy:
 - Strict: stop on any read/cast/write failure to avoid partial clean outputs.
 """
 
-from pathlib import Path
 import pandas as pd
 from utils.io import repo_root, read_parquet, write_parquet
+from utils.logging import configure_logging, get_logger
 
+
+configure_logging()
+logger = get_logger(__name__)
 
 REPO_ROOT = repo_root()
 INTERIM = REPO_ROOT / "data" / "interim"
 CLEAN = REPO_ROOT / "data" / "clean"
-CLEAN.mkdir(parents=True, exist_ok=True)
 
 FILES = [
     "olist_orders_dataset.parquet",
@@ -124,25 +126,47 @@ def main() -> None:
         in_path = INTERIM / filename
         out_path = CLEAN / filename
 
-        try:
-            df = pd.read_parquet(in_path)
-        except Exception as exc:
-            raise SystemExit(f"Failed to read {in_path}:\n{exc}") from exc
+        logger.info("Processing %s", filename)
 
+        # -----------------
+        # Read
+        # -----------------
+        try:
+            df = read_parquet(in_path)
+        except Exception:
+            logger.exception("Read failed: %s", in_path)
+            raise
+
+        # -----------------
+        # Rename (if needed)
+        # -----------------
         if filename == "olist_products_dataset.parquet":
+            before = set(df.columns)
             df = df.rename(columns=RENAME_MAP)
-        
+            after = set(df.columns)
+            if before != after:
+                logger.info("Applied column rename map for %s", filename)
+
+        # -----------------
+        # Enforce schema
+        # -----------------
         try:
             df = enforce_schema(filename, df)
-        except Exception as exc:
-            raise SystemExit(f"Failed to enforce schema for {filename}:\n{exc}") from exc
+        except Exception:
+            logger.exception("Schema enforcement failed: %s", filename)
+            raise
 
+        # -----------------
+        # Write
+        # -----------------
         try:
             write_parquet(df, out_path)
-        except Exception as exc:
-            raise SystemExit(f"Failed to write {out_path}:\n{exc}") from exc
+        except Exception:
+            logger.exception("Write failed: %s", out_path)
+            raise
 
-        print(f"Wrote {out_path}")
+
+        logger.info("Wrote %s", out_path)
 
 
 if __name__ == "__main__":

@@ -13,16 +13,20 @@ Heuristics flag columns that *look* mis-typed:
 
 from __future__ import annotations
 
-from pathlib import Path
 import re
 import pandas as pd
-from utils.io import repo_root, write_csv
+
+from utils.io import repo_root, read_parquet, write_csv
+from utils.logging import configure_logging, get_logger
+
+
+configure_logging()
+logger = get_logger(__name__)
 
 
 REPO_ROOT = repo_root()
 CLEAN = REPO_ROOT / "data" / "clean"
 OUT = REPO_ROOT / "reports"
-OUT.mkdir(parents=True, exist_ok=True)
 
 
 ID_RE = re.compile(r".*_id$|^order_item_id$|.*zip.*|.*postal.*", re.IGNORECASE)
@@ -66,7 +70,14 @@ def main() -> None:
     flag_rows = []
 
     for p in files:
-        df = pd.read_parquet(p)
+        logger.info("Auditing %s", p.name)
+
+        try:
+            df = pd.read_parquet(p)
+        except Exception:
+            logger.exception("Read failed: %s", p)
+            raise
+
         for col in df.columns:
             fam = dtype_family(df[col].dtype)
             sample = sample_non_null(df, col)
@@ -112,12 +123,33 @@ def main() -> None:
     full_path = OUT / "clean_dtypes_full.csv"
     flags_path = OUT / "clean_dtypes_flags.csv"
 
-    write_csv(pd.DataFrame(full_rows), full_path)
-    write_csv(pd.DataFrame(flag_rows), flags_path)
+    # Force consistent columns so the flags CSV still has headers even when empty
+    columns = [
+        "file",
+        "column",
+        "dtype",
+        "dtype_family",
+        "expected_family_heuristic",
+        "sample_values",
+        "flagged",
+        "flag_reason",
+    ]
+
+    try:
+        write_csv(pd.DataFrame(full_rows, columns=columns), full_path)
+    except Exception:
+        logger.exception("Write failed: %s", full_path)
+        raise
 
 
-    print(f"Wrote {full_path} (rows={len(full_rows)})")
-    print(f"Wrote {flags_path} (flags={len(flag_rows)})")
+    try:
+        write_csv(pd.DataFrame(flag_rows, columns=columns), flags_path)
+    except Exception:
+        logger.exception("Write failed: %s", flags_path)
+        raise
+
+    logger.info("Wrote %s (rows=%s)", full_path, len(full_rows))
+    logger.info("Wrote %s (flags=%s)", flags_path, len(flag_rows))
 
 
 if __name__ == "__main__":
