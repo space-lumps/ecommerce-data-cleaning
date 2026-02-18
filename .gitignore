@@ -10,6 +10,9 @@ data/interim/
 # Cleaned data (files are still large)
 data/clean/
 
+# Utilities used in development
+tools/
+
 # OS files
 .DS_Store
 
