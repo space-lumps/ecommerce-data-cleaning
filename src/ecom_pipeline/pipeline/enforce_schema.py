@@ -12,8 +12,8 @@ Policy:
 """
 
 import pandas as pd
-from utils.io import repo_root, read_parquet, write_parquet
-from utils.logging import configure_logging, get_logger
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_parquet
+from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 
 configure_logging()

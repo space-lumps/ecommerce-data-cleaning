@@ -16,8 +16,8 @@ from __future__ import annotations
 import re
 import pandas as pd
 
-from utils.io import repo_root, read_parquet, write_csv
-from utils.logging import configure_logging, get_logger
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv
+from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 
 configure_logging()
@@ -42,10 +42,15 @@ NUM_RE = re.compile(
 
 def dtype_family(dtype) -> str:
     s = str(dtype)
+    # Explicit str (rare but safe to include)
     if s == "str":
+        return "str"
+    # String family (modern + legacy)
+    if s == "object" or s.startswith("string"):
         return "str"
     if s.startswith("datetime64"):
         return "datetime"
+    # Numeric family (numpy + pandas nullable)
     if s in ("int64", "float64", "Int64", "Float64", "int32", "float32"):
         return "numeric"
     if s == "object":

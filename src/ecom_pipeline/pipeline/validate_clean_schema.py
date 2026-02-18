@@ -13,30 +13,16 @@ Checks:
 - numeric_cols are not object/str (float/int ok)
 """
 
-from pathlib import Path
-import importlib.util
 import pandas as pd
 
-from utils.io import repo_root, read_parquet, write_csv
-from utils.logging import configure_logging, get_logger
+from ecom_pipeline.pipeline.enforce_schema import CAST_RULES
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv
+from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 
 configure_logging()
 logger = get_logger(__name__)
 
-
-# workaround for module import:
-# 03_enforce_schema cannot be imported directly since python does not allow importing modules beginning with a number
-_spec = importlib.util.spec_from_file_location(
-    "enforce_schema",
-    Path(__file__).resolve().parent / "03_enforce_schema.py",
-)
-if _spec is None or _spec.loader is None:
-    raise SystemExit("Failed to load 03_enforce_schema.py via importlib")
-
-_enforce = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_enforce)
-CAST_RULES = _enforce.CAST_RULES
 
 
 REPO_ROOT = repo_root()

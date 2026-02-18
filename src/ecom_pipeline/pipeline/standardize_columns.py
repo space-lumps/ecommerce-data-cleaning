@@ -15,13 +15,15 @@ Why this step exists:
 from pathlib import Path
 import pandas as pd
 
+from ecom_pipeline.utils.io import repo_root
+
 
 # -------------------------
 # Directory configuration
 # -------------------------
 
 # Anchor execution to repo root (independent of working directory)
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 
 # Immutable input data
 RAW = REPO_ROOT / "data" / "raw"
@@ -30,7 +32,7 @@ RAW = REPO_ROOT / "data" / "raw"
 INTERIM = REPO_ROOT / "data" / "interim"
 
 # Ensure the interim directory exists so the script is re-runnable
-INTERIM.mkdir(parents=True, exist_ok=True)
+# INTERIM.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------

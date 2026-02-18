@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def ensure_dir(path: Path) -> None:

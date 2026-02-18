@@ -15,8 +15,10 @@ from pathlib import Path
 import sys
 import pandas as pd
 
+from ecom_pipeline.utils.io import repo_root
+
 # Anchor execution to repo root (independent of working directory)
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 
 # Immutable input data
 RAW = REPO_ROOT / "data" / "raw"

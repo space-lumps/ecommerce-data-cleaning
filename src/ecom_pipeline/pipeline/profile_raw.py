@@ -21,20 +21,22 @@ Output:
 from pathlib import Path
 import pandas as pd
 
+from ecom_pipeline.utils.io import repo_root
+
 
 # -------------------------
 # Directory configuration
 # -------------------------
 
 # Anchor execution to repo root (independent of working directory)
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = repo_root()
 
 # Immutable input data
 RAW = REPO_ROOT / "data" / "raw"
 
 # Profiling output location
 OUT = REPO_ROOT / "reports"
-OUT.mkdir(parents=True, exist_ok=True)
+#OUT.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------
