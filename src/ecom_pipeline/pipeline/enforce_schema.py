@@ -53,8 +53,8 @@ CAST_RULES = {
         },
     'olist_order_items_dataset.parquet': {
         'datetime_cols': ['shipping_limit_date'],
-        'string_cols': ['order_id', 'order_item_id', 'product_id', 'seller_id'],
-        'numeric_cols': ['price', 'freight_value']
+        'string_cols': ['order_id', 'product_id', 'seller_id'],
+        'numeric_cols': ['price', 'freight_value', 'order_item_id']
         },
     'olist_order_payments_dataset.parquet': {
         'datetime_cols': [],

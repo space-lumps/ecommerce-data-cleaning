@@ -1,0 +1,116 @@
+table,check,status,details,column
+olist_customers_dataset.parquet,required_columns,pass,,
+olist_customers_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_id
+olist_customers_dataset.parquet,non_null,pass,,customer_id
+olist_customers_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_unique_id
+olist_customers_dataset.parquet,non_null,pass,,customer_unique_id
+olist_customers_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_zip_code_prefix
+olist_customers_dataset.parquet,non_null,pass,,customer_zip_code_prefix
+olist_customers_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_city
+olist_customers_dataset.parquet,non_null,pass,,customer_city
+olist_customers_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_state
+olist_customers_dataset.parquet,non_null,pass,,customer_state
+olist_customers_dataset.parquet,primary_key_unique,pass,pk=['customer_id'],
+olist_sellers_dataset.parquet,required_columns,pass,,
+olist_sellers_dataset.parquet,dtype_family,pass,expected=str actual=str,seller_id
+olist_sellers_dataset.parquet,non_null,pass,,seller_id
+olist_sellers_dataset.parquet,dtype_family,pass,expected=str actual=str,seller_zip_code_prefix
+olist_sellers_dataset.parquet,non_null,pass,,seller_zip_code_prefix
+olist_sellers_dataset.parquet,dtype_family,pass,expected=str actual=str,seller_city
+olist_sellers_dataset.parquet,non_null,pass,,seller_city
+olist_sellers_dataset.parquet,dtype_family,pass,expected=str actual=str,seller_state
+olist_sellers_dataset.parquet,non_null,pass,,seller_state
+olist_sellers_dataset.parquet,primary_key_unique,pass,pk=['seller_id'],
+olist_products_dataset.parquet,required_columns,pass,,
+olist_products_dataset.parquet,dtype_family,pass,expected=str actual=str,product_id
+olist_products_dataset.parquet,non_null,pass,,product_id
+olist_products_dataset.parquet,dtype_family,pass,expected=str actual=str,product_category_name
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_name_length
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_description_length
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_photos_qty
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_weight_g
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_length_cm
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_height_cm
+olist_products_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,product_width_cm
+olist_products_dataset.parquet,primary_key_unique,pass,pk=['product_id'],
+product_category_name_translation.parquet,required_columns,pass,,
+product_category_name_translation.parquet,dtype_family,pass,expected=str actual=str,product_category_name
+product_category_name_translation.parquet,non_null,pass,,product_category_name
+product_category_name_translation.parquet,dtype_family,pass,expected=str actual=str,product_category_name_english
+product_category_name_translation.parquet,non_null,pass,,product_category_name_english
+product_category_name_translation.parquet,primary_key_unique,pass,pk=['product_category_name'],
+olist_geolocation_dataset.parquet,required_columns,pass,,
+olist_geolocation_dataset.parquet,dtype_family,pass,expected=str actual=str,geolocation_zip_code_prefix
+olist_geolocation_dataset.parquet,non_null,pass,,geolocation_zip_code_prefix
+olist_geolocation_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,geolocation_lat
+olist_geolocation_dataset.parquet,non_null,pass,,geolocation_lat
+olist_geolocation_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,geolocation_lng
+olist_geolocation_dataset.parquet,non_null,pass,,geolocation_lng
+olist_geolocation_dataset.parquet,dtype_family,pass,expected=str actual=str,geolocation_city
+olist_geolocation_dataset.parquet,non_null,pass,,geolocation_city
+olist_geolocation_dataset.parquet,dtype_family,pass,expected=str actual=str,geolocation_state
+olist_geolocation_dataset.parquet,non_null,pass,,geolocation_state
+olist_orders_dataset.parquet,required_columns,pass,,
+olist_orders_dataset.parquet,dtype_family,pass,expected=str actual=str,order_id
+olist_orders_dataset.parquet,non_null,pass,,order_id
+olist_orders_dataset.parquet,dtype_family,pass,expected=str actual=str,customer_id
+olist_orders_dataset.parquet,non_null,pass,,customer_id
+olist_orders_dataset.parquet,dtype_family,pass,expected=str actual=str,order_status
+olist_orders_dataset.parquet,non_null,pass,,order_status
+olist_orders_dataset.parquet,allowed_values,pass,,order_status
+olist_orders_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,order_purchase_timestamp
+olist_orders_dataset.parquet,non_null,pass,,order_purchase_timestamp
+olist_orders_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,order_approved_at
+olist_orders_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,order_delivered_carrier_date
+olist_orders_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,order_delivered_customer_date
+olist_orders_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,order_estimated_delivery_date
+olist_orders_dataset.parquet,non_null,pass,,order_estimated_delivery_date
+olist_orders_dataset.parquet,primary_key_unique,pass,pk=['order_id'],
+olist_orders_dataset.parquet,foreign_key_integrity,pass,from_cols=['customer_id'] to_table=olist_customers_dataset.parquet,
+olist_order_items_dataset.parquet,required_columns,pass,,
+olist_order_items_dataset.parquet,dtype_family,pass,expected=str actual=str,order_id
+olist_order_items_dataset.parquet,non_null,pass,,order_id
+olist_order_items_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,order_item_id
+olist_order_items_dataset.parquet,non_null,pass,,order_item_id
+olist_order_items_dataset.parquet,dtype_family,pass,expected=str actual=str,product_id
+olist_order_items_dataset.parquet,non_null,pass,,product_id
+olist_order_items_dataset.parquet,dtype_family,pass,expected=str actual=str,seller_id
+olist_order_items_dataset.parquet,non_null,pass,,seller_id
+olist_order_items_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,shipping_limit_date
+olist_order_items_dataset.parquet,non_null,pass,,shipping_limit_date
+olist_order_items_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,price
+olist_order_items_dataset.parquet,non_null,pass,,price
+olist_order_items_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,freight_value
+olist_order_items_dataset.parquet,non_null,pass,,freight_value
+olist_order_items_dataset.parquet,primary_key_unique,pass,"pk=['order_id', 'order_item_id']",
+olist_order_items_dataset.parquet,foreign_key_integrity,pass,from_cols=['order_id'] to_table=olist_orders_dataset.parquet,
+olist_order_items_dataset.parquet,foreign_key_integrity,pass,from_cols=['product_id'] to_table=olist_products_dataset.parquet,
+olist_order_items_dataset.parquet,foreign_key_integrity,pass,from_cols=['seller_id'] to_table=olist_sellers_dataset.parquet,
+olist_order_payments_dataset.parquet,required_columns,pass,,
+olist_order_payments_dataset.parquet,dtype_family,pass,expected=str actual=str,order_id
+olist_order_payments_dataset.parquet,non_null,pass,,order_id
+olist_order_payments_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,payment_sequential
+olist_order_payments_dataset.parquet,non_null,pass,,payment_sequential
+olist_order_payments_dataset.parquet,dtype_family,pass,expected=str actual=str,payment_type
+olist_order_payments_dataset.parquet,non_null,pass,,payment_type
+olist_order_payments_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,payment_installments
+olist_order_payments_dataset.parquet,non_null,pass,,payment_installments
+olist_order_payments_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,payment_value
+olist_order_payments_dataset.parquet,non_null,pass,,payment_value
+olist_order_payments_dataset.parquet,primary_key_unique,pass,"pk=['order_id', 'payment_sequential']",
+olist_order_payments_dataset.parquet,foreign_key_integrity,pass,from_cols=['order_id'] to_table=olist_orders_dataset.parquet,
+olist_order_reviews_dataset.parquet,required_columns,pass,,
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=str actual=str,review_id
+olist_order_reviews_dataset.parquet,non_null,pass,,review_id
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=str actual=str,order_id
+olist_order_reviews_dataset.parquet,non_null,pass,,order_id
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=numeric actual=numeric,review_score
+olist_order_reviews_dataset.parquet,non_null,pass,,review_score
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=str actual=str,review_comment_title
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=str actual=str,review_comment_message
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,review_creation_date
+olist_order_reviews_dataset.parquet,non_null,pass,,review_creation_date
+olist_order_reviews_dataset.parquet,dtype_family,pass,expected=datetime actual=datetime,review_answer_timestamp
+olist_order_reviews_dataset.parquet,non_null,pass,,review_answer_timestamp
+olist_order_reviews_dataset.parquet,primary_key_unique,pass,"pk=['order_id', 'review_id']",
+olist_order_reviews_dataset.parquet,foreign_key_integrity,pass,from_cols=['order_id'] to_table=olist_orders_dataset.parquet,

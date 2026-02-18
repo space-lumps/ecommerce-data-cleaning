@@ -6,12 +6,12 @@ olist_geolocation_dataset.parquet,geolocation_zip_code_prefix,str,str,True
 olist_geolocation_dataset.parquet,geolocation_lat,numeric,numeric,True
 olist_geolocation_dataset.parquet,geolocation_lng,numeric,numeric,True
 olist_order_items_dataset.parquet,order_id,str,str,True
-olist_order_items_dataset.parquet,order_item_id,str,str,True
 olist_order_items_dataset.parquet,product_id,str,str,True
 olist_order_items_dataset.parquet,seller_id,str,str,True
 olist_order_items_dataset.parquet,shipping_limit_date,datetime,datetime,True
 olist_order_items_dataset.parquet,price,numeric,numeric,True
 olist_order_items_dataset.parquet,freight_value,numeric,numeric,True
+olist_order_items_dataset.parquet,order_item_id,numeric,numeric,True
 olist_order_payments_dataset.parquet,order_id,str,str,True
 olist_order_payments_dataset.parquet,payment_installments,numeric,numeric,True
 olist_order_payments_dataset.parquet,payment_value,numeric,numeric,True

@@ -29,7 +29,7 @@ CLEAN = REPO_ROOT / "data" / "clean"
 OUT = REPO_ROOT / "reports"
 
 
-ID_RE = re.compile(r".*_id$|^order_item_id$|.*zip.*|.*postal.*", re.IGNORECASE)
+ID_RE = re.compile(r".*_id$|.*zip.*|.*postal.*", re.IGNORECASE)
 DT_RE = re.compile(r".*timestamp.*|.*_date$|.*approved_at$|.*delivered_.*|.*estimated_.*", re.IGNORECASE)
 
 # Common numeric patterns in Olist; expand if needed
@@ -89,7 +89,9 @@ def main() -> None:
 
             # Heuristic expectations
             exp = None
-            if ID_RE.match(col):
+            if col == "order_item_id":
+                exp = "numeric"
+            elif ID_RE.match(col):
                 exp = "str"
             elif DT_RE.match(col):
                 exp = "datetime"
