@@ -15,25 +15,61 @@ This project demonstrates:
 
 ---
 
+## Setup
+
+### Clone the repository
+
+```bash
+git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
+cd ecommerce-data-cleaning
+```
+
+---
+
+## Environment Setup (uv)
+
+```bash
+uv venv
+uv pip install -e .
+```
+This installs the ecom_pipeline package locally so modules can be executed without modifying `PYTHONPATH`.
+
+---
+
 ## Dataset Setup
 
-This project expects the Olist CSV files to be placed in:
+The pipeline can run using either the included sample dataset or the full Kaggle dataset.
 
-    data/raw/
+### Option A — Use included sample dataset (no Kaggle required)
 
-You can download the dataset from Kaggle:
+1. Copy sample CSVs into `data/raw/`:
 
-https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
+```bash
+cp data/samples/*.csv data/raw/
+```
+Ensure `data/raw/` contains only one dataset version (either samples or full Kaggle data).
 
-### Option 1 — Manual Download
+Run the pipeline:
 
-1. Download the dataset from Kaggle.
+```bash
+uv run python run_pipeline.py
+```
+
+### Option B - Download full dataset from Kaggle
+
+Expected location:
+
+```text
+data/raw/
+```
+
+### Manual Download
+
+1. Download the dataset from Kaggle: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 2. Extract the CSV files.
-3. Move all `.csv` files into:
+3. Move all `.csv` files into: `data/raw/`
 
-    data/raw/
-
-### Option 2 — Kaggle CLI (recommended)
+### Kaggle CLI (recommended)
 
 Install Kaggle CLI:
 
@@ -41,16 +77,13 @@ Install Kaggle CLI:
 pip install kaggle
 ```
 
-Authenticate (place `kaggle.json` in `~/.kaggle/`).
-
-Then run from project root:
+Place `kaggle.json` in `~/.kaggle/`, then run:
 
 ```bash
 kaggle datasets download -d olistbr/brazilian-ecommerce -p data/raw --unzip
 ```
 
-This will download and extract the required CSV files directly into `data/raw/`.
-
+---
 
 ### Data Directories
 
@@ -58,10 +91,8 @@ This will download and extract the required CSV files directly into `data/raw/`.
 data/raw/       # Original source files
 data/interim/   # Optional intermediate artifacts
 data/clean/     # Cleaned parquet outputs
-data/samples/   # Smaller representative dataset for lightweight testing
+data/samples/   # Static lightweight dataset (no Kaggle required)
 ```
-
-The `data/samples/` directory contains a reduced dataset that mirrors the structure of the full dataset and can be used for faster development or demonstration.
 
 ---
 
@@ -77,10 +108,11 @@ ecommerce-data-cleaning/
 │   └── samples/
 │
 ├── reports/
-│
-├── docs/           # Project notes and documentation (currently empty)
+├── tools/
+├── docs/
 │   ├── data_dictionary.md
-│   └── vaidation_strategy.md
+│   ├── validation_strategy.md
+│   └── schema_contract.md
 │
 ├── src/
 │   └── ecom_pipeline/
@@ -96,29 +128,11 @@ ecommerce-data-cleaning/
 ├── uv.lock
 └── README.md
 ```
-
 The project follows a proper `src/` layout.  
 All reusable code lives inside the `ecom_pipeline` package.
 
 ---
 
-## Environment Setup
-
-This project uses `uv` for environment and dependency management.
-
-### Create virtual environment
-
-```bash
-uv venv
-```
-
-### Install project in editable mode
-
-```bash
-uv pip install -e .
-```
-
-This installs the `ecom_pipeline` package locally so modules can be executed without modifying `PYTHONPATH`.
 
 ---
 
@@ -139,6 +153,8 @@ Run individual modules:
 
 ```bash
 uv run python -m ecom_pipeline.pipeline.sanity_check_raw
+uv run python -m ecom_pipeline.pipeline.profile_raw
+uv run python -m ecom_pipeline.pipeline.generate_data_dictionary
 uv run python -m ecom_pipeline.pipeline.standardize_columns
 uv run python -m ecom_pipeline.pipeline.enforce_schema
 uv run python -m ecom_pipeline.pipeline.validate_clean_schema
@@ -156,33 +172,61 @@ uv run python run_pipeline.py
 
 ## Pipeline Stages
 
-1. **Sanity Check Raw**  
-   Confirms raw files exist and are readable.
-
-2. **Profile Raw**  
-   Profiles source datasets before transformation.
-
-3. **Standardize Columns**  
-   Applies consistent column naming.
-
-4. **Enforce Schema**  
-   Applies explicit casting rules to produce clean parquet outputs.
-
-5. **Validate Clean Schema**  
-   Verifies data types match expectations.
-
-6. **Audit Dtypes**  
-   Flags suspicious type patterns using heuristics.
+1. **Sanity Check Raw**
+  Confirms raw files exist and are readable.
+2. **Profile Raw**
+  Profiles source datasets before transformation.
+3. **Generate Data Dictionary**  
+  Generates `docs/data_dictionary.md` from `reports/raw_profile.csv`.
+4. **Standardize Columns**
+  Applies consistent column naming.
+5. **Enforce Schema**
+  Applies explicit casting rules to produce clean parquet outputs.
+6. **Validate Clean Schema**
+  Verifies data types match expectations.
+7. **Audit Dtypes**
+  Flags suspicious type patterns using heuristics.
+8. **Validate Schema Contract**
+  Enforces required columns, primary key uniqueness, and logical dtype guarantees.
 
 ---
 
 ## Outputs
 
 - `data/clean/*.parquet`
+- `docs/data_dictionary.md`
+- `reports/raw_profile.csv`
 - `reports/clean_schema_audit.csv`
 - `reports/clean_dtypes_full.csv`
 - `reports/clean_dtypes_flags.csv`
 - `reports/clean_contract_audit.csv`
+
+---
+
+## Validation & Schema Enforcement
+
+The pipeline enforces structural guarantees after cleaning.
+
+### 1. Deterministic Type Casting
+
+- Implemented in `enforce_schema.py`
+- Ensures consistent logical dtypes (str, datetime, numeric)
+
+### 2. Clean Schema Validation
+
+- Implemented in `validate_clean_schema.py`
+- Verifies expected dtype families after casting
+
+### 3. Schema Contract Validation
+
+- Implemented in `validate_schema_contract.py`
+- Enforces:
+  - Required columns
+  - Primary key uniqueness
+  - Logical dtype expectations
+  - Structural dataset integrity
+
+If any contract rule fails, the dataset is considered invalid.
 
 ---
 
@@ -199,7 +243,7 @@ uv run python run_pipeline.py
 
 ## Future Improvements
 
-- Replace orchestration with `dlt`
-- Add primary key validation checks
-- Introduce CI for automated validation
-- Expand schema contract enforcement
+- Add foreign key integrity validation (cross-table checks)
+- Add domain/value constraints (e.g., non-negative price, valid order_status domain)
+- Add CI pipeline (GitHub Actions) to run validation automatically
+- Optional: Integrate `dlt` for declarative pipeline orchestration
