@@ -8,6 +8,8 @@ It documents:
 - column counts
 - column names
 - inferred dtypes
+- null counts
+- null percentages
 
 Purpose:
 - understand dataset shape before cleaning
@@ -21,22 +23,16 @@ Output:
 from pathlib import Path
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root
+from ecom_pipeline.utils.io import repo_root, ensure_dir
 
 
 # -------------------------
 # Directory configuration
 # -------------------------
 
-# Anchor execution to repo root (independent of working directory)
 REPO_ROOT = repo_root()
-
-# Immutable input data
 RAW = REPO_ROOT / "data" / "raw"
-
-# Profiling output location
 OUT = REPO_ROOT / "reports"
-#OUT.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------
@@ -60,13 +56,12 @@ FILES = [
 # Profiling logic
 # -------------------------
 
-def profile_csv(filename: str) -> dict:
+def profile_csv(filename: str) -> list[dict]:
     """
-    Read a CSV file and return structural metadata.
+    Profile a CSV at the column level.
 
     Returns:
-        dict with file name, row count, column count,
-        column list, and inferred dtypes.
+        list of dict rows (one per column)
     """
     path = RAW / filename
 
@@ -75,18 +70,24 @@ def profile_csv(filename: str) -> dict:
     except Exception as exc:
         raise SystemExit(f"Failed to read {path}:\n{exc}") from exc
 
-    # Serialize dtypes as: "col:type|col:type|..."
-    dtypes_str = "|".join(
-        f"{col}:{dtype}" for col, dtype in df.dtypes.items()
-    )
+    rows = []
 
-    return {
-        "file": filename,
-        "rows": int(len(df)),
-        "cols": int(df.shape[1]),
-        "columns": ",".join(df.columns),
-        "dtypes": dtypes_str,
-    }
+    total_rows = len(df)
+
+    for col in df.columns:
+        null_count = int(df[col].isna().sum())
+        null_pct = round((null_count / total_rows) * 100, 4) if total_rows else 0.0
+
+        rows.append({
+            "file": filename,
+            "column": col,
+            "rows": total_rows,
+            "dtype": str(df[col].dtype),
+            "null_count": null_count,
+            "null_pct": null_pct,
+        })
+
+    return rows
 
 
 # -------------------------
@@ -95,23 +96,27 @@ def profile_csv(filename: str) -> dict:
 
 def main() -> None:
     """Profile all raw CSVs and write consolidated report."""
-    rows = []
+    all_rows = []
+
     out_path = OUT / "raw_profile.csv"
-    
+    ensure_dir(out_path.parent)
+
     for f in FILES:
         try:
-            rows.append(profile_csv(f))
+            all_rows.extend(profile_csv(f))
         except Exception as exc:
-            rows.append({
+            all_rows.append({
                 "file": f,
+                "column": None,
                 "rows": None,
-                "cols": None,
-                "columns": None,
-                "dtypes": None,
+                "dtype": None,
+                "null_count": None,
+                "null_pct": None,
                 "error": str(exc),
             })
 
-    pd.DataFrame(rows).to_csv(out_path, index=False)
+    pd.DataFrame(all_rows).to_csv(out_path, index=False)
+
 
 if __name__ == "__main__":
     main()
