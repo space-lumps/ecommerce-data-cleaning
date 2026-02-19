@@ -16,9 +16,14 @@ from __future__ import annotations
 import re
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv, clean_dir, reports_dir
+from ecom_pipeline.utils.io import (
+    repo_root,
+    read_parquet,
+    write_csv,
+    clean_dir,
+    reports_dir,
+)
 from ecom_pipeline.utils.logging import configure_logging, get_logger
-
 
 configure_logging()
 logger = get_logger(__name__)
@@ -30,7 +35,10 @@ OUT = reports_dir()
 
 
 ID_RE = re.compile(r".*_id$|.*zip.*|.*postal.*", re.IGNORECASE)
-DT_RE = re.compile(r".*timestamp.*|.*_date$|.*approved_at$|.*delivered_.*|.*estimated_.*", re.IGNORECASE)
+DT_RE = re.compile(
+    r".*timestamp.*|.*_date$|.*approved_at$|.*delivered_.*|.*estimated_.*",
+    re.IGNORECASE,
+)
 
 # Common numeric patterns in Olist; expand if needed
 NUM_RE = re.compile(
@@ -147,7 +155,6 @@ def main() -> None:
     except Exception:
         logger.exception("Write failed: %s", full_path)
         raise
-
 
     try:
         write_csv(pd.DataFrame(flag_rows, columns=columns), flags_path)

@@ -25,7 +25,6 @@ import pandas as pd
 
 from ecom_pipeline.utils.io import repo_root, ensure_dir, raw_dir, reports_dir
 
-
 # -------------------------
 # Directory configuration
 # -------------------------
@@ -56,6 +55,7 @@ FILES = [
 # Profiling logic
 # -------------------------
 
+
 def profile_csv(filename: str) -> list[dict]:
     """
     Profile a CSV at the column level.
@@ -78,14 +78,16 @@ def profile_csv(filename: str) -> list[dict]:
         null_count = int(df[col].isna().sum())
         null_pct = round((null_count / total_rows) * 100, 4) if total_rows else 0.0
 
-        rows.append({
-            "file": filename,
-            "column": col,
-            "rows": total_rows,
-            "dtype": str(df[col].dtype),
-            "null_count": null_count,
-            "null_pct": null_pct,
-        })
+        rows.append(
+            {
+                "file": filename,
+                "column": col,
+                "rows": total_rows,
+                "dtype": str(df[col].dtype),
+                "null_count": null_count,
+                "null_pct": null_pct,
+            }
+        )
 
     return rows
 
@@ -93,6 +95,7 @@ def profile_csv(filename: str) -> list[dict]:
 # -------------------------
 # Pipeline entry point
 # -------------------------
+
 
 def main() -> None:
     """Profile all raw CSVs and write consolidated report."""
@@ -105,15 +108,17 @@ def main() -> None:
         try:
             all_rows.extend(profile_csv(f))
         except Exception as exc:
-            all_rows.append({
-                "file": f,
-                "column": None,
-                "rows": None,
-                "dtype": None,
-                "null_count": None,
-                "null_pct": None,
-                "error": str(exc),
-            })
+            all_rows.append(
+                {
+                    "file": f,
+                    "column": None,
+                    "rows": None,
+                    "dtype": None,
+                    "null_count": None,
+                    "null_pct": None,
+                    "error": str(exc),
+                }
+            )
 
     pd.DataFrame(all_rows).to_csv(out_path, index=False)
 

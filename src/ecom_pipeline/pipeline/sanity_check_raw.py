@@ -36,6 +36,7 @@ FILES = [
     "product_category_name_translation.csv",
 ]
 
+
 def main() -> None:
     # build a list of missing files in the repo
     missing = [f for f in FILES if not (RAW / f).exists()]
@@ -55,8 +56,9 @@ def main() -> None:
         print(f"\n{f}")
         print(f"rows={len(df):,} cols={df.shape[1]:,}")
 
-        #print inferred data types
+        # print inferred data types
         print(df.dtypes)
+
 
 if __name__ == "__main__":
     main()

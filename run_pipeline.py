@@ -24,5 +24,6 @@ def main() -> None:
     audit_all_clean_dtypes.main()
     validate_schema_contract.main()
 
+
 if __name__ == "__main__":
     main()

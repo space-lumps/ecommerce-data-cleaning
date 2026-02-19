@@ -17,7 +17,6 @@ import pandas as pd
 
 from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir, write_parquet
 
-
 # -------------------------
 # Directory configuration
 # -------------------------
@@ -58,6 +57,7 @@ FILES = [
 # Transformation logic
 # -------------------------
 
+
 def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     Return a copy of the DataFrame with standardized column names.
@@ -71,12 +71,7 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
 
-    df.columns = (
-        df.columns
-            .str.strip()
-            .str.lower()
-            .str.replace(" ", "_")
-    )
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
     return df
 
@@ -84,6 +79,7 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
 # -------------------------
 # Pipeline entry point
 # -------------------------
+
 
 def main() -> None:
     """
@@ -112,6 +108,7 @@ def main() -> None:
             raise SystemExit(f"Failed to write {out_path}:\n{exc}") from exc
 
         print(f"Wrote {out_path}")
+
 
 if __name__ == "__main__":
     main()

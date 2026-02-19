@@ -22,10 +22,15 @@ from pandas.api.types import (
     is_string_dtype,
 )
 
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv, clean_dir, reports_dir
+from ecom_pipeline.utils.io import (
+    repo_root,
+    read_parquet,
+    write_csv,
+    clean_dir,
+    reports_dir,
+)
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
-
 
 configure_logging()
 logger = get_logger(__name__)
@@ -319,11 +324,18 @@ def main() -> None:
             left = df[from_cols].dropna().drop_duplicates()
             right = df_to[to_cols].dropna().drop_duplicates()
 
-            merged = left.merge(right, how="left", left_on=from_cols, right_on=to_cols, indicator=True)
+            merged = left.merge(
+                right, how="left", left_on=from_cols, right_on=to_cols, indicator=True
+            )
             orphan_count = int((merged["_merge"] == "left_only").sum())
 
             if orphan_count > 0:
-                sample = merged.loc[merged["_merge"] == "left_only", from_cols].head(5).astype(str).to_dict("records")
+                sample = (
+                    merged.loc[merged["_merge"] == "left_only", from_cols]
+                    .head(5)
+                    .astype(str)
+                    .to_dict("records")
+                )
                 fails += 1
                 rows.append(
                     {
@@ -348,7 +360,9 @@ def main() -> None:
     logger.info("Wrote %s (fails=%s)", out_path, fails)
 
     if fails > 0:
-        raise SystemExit(f"Schema contract validation failed (fails={fails}). See {out_path}")
+        raise SystemExit(
+            f"Schema contract validation failed (fails={fails}). See {out_path}"
+        )
 
 
 if __name__ == "__main__":

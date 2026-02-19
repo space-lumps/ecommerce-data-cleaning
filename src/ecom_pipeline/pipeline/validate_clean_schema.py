@@ -16,13 +16,17 @@ Checks:
 import pandas as pd
 
 from ecom_pipeline.pipeline.enforce_schema import CAST_RULES
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv, clean_dir, reports_dir
+from ecom_pipeline.utils.io import (
+    repo_root,
+    read_parquet,
+    write_csv,
+    clean_dir,
+    reports_dir,
+)
 from ecom_pipeline.utils.logging import configure_logging, get_logger
-
 
 configure_logging()
 logger = get_logger(__name__)
-
 
 
 REPO_ROOT = repo_root()
@@ -65,26 +69,74 @@ def main() -> None:
         # ---- string cols ----
         for col in rules.get("string_cols", []):
             if col not in df.columns:
-                rows.append({"file": filename, "column": col, "expected": "str", "actual": "missing", "pass": False})
+                rows.append(
+                    {
+                        "file": filename,
+                        "column": col,
+                        "expected": "str",
+                        "actual": "missing",
+                        "pass": False,
+                    }
+                )
                 continue
             actual = dtype_family(df[col].dtype)
-            rows.append({"file": filename, "column": col, "expected": "str", "actual": actual, "pass": actual == "str"})
+            rows.append(
+                {
+                    "file": filename,
+                    "column": col,
+                    "expected": "str",
+                    "actual": actual,
+                    "pass": actual == "str",
+                }
+            )
 
         # ---- datetime cols ----
         for col in rules.get("datetime_cols", []):
             if col not in df.columns:
-                rows.append({"file": filename, "column": col, "expected": "datetime", "actual": "missing", "pass": False})
+                rows.append(
+                    {
+                        "file": filename,
+                        "column": col,
+                        "expected": "datetime",
+                        "actual": "missing",
+                        "pass": False,
+                    }
+                )
                 continue
             actual = dtype_family(df[col].dtype)
-            rows.append({"file": filename, "column": col, "expected": "datetime", "actual": actual, "pass": actual == "datetime"})
+            rows.append(
+                {
+                    "file": filename,
+                    "column": col,
+                    "expected": "datetime",
+                    "actual": actual,
+                    "pass": actual == "datetime",
+                }
+            )
 
         # ---- numeric cols ----
         for col in rules.get("numeric_cols", []):
             if col not in df.columns:
-                rows.append({"file": filename, "column": col, "expected": "numeric", "actual": "missing", "pass": False})
+                rows.append(
+                    {
+                        "file": filename,
+                        "column": col,
+                        "expected": "numeric",
+                        "actual": "missing",
+                        "pass": False,
+                    }
+                )
                 continue
             actual = dtype_family(df[col].dtype)
-            rows.append({"file": filename, "column": col, "expected": "numeric", "actual": actual, "pass": actual == "numeric"})
+            rows.append(
+                {
+                    "file": filename,
+                    "column": col,
+                    "expected": "numeric",
+                    "actual": actual,
+                    "pass": actual == "numeric",
+                }
+            )
 
     out_path = OUT / "clean_schema_audit.csv"
 
@@ -93,7 +145,6 @@ def main() -> None:
     except Exception:
         logger.exception("Write failed: %s", out_path)
         raise
-
 
     fails = sum(1 for r in rows if r.get("pass") is False)
     logger.info("Wrote %s (fails=%s)", out_path, fails)

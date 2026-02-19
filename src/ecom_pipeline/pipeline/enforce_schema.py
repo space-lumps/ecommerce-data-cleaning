@@ -12,9 +12,14 @@ Policy:
 """
 
 import pandas as pd
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_parquet, interim_dir, clean_dir
+from ecom_pipeline.utils.io import (
+    repo_root,
+    read_parquet,
+    write_parquet,
+    interim_dir,
+    clean_dir,
+)
 from ecom_pipeline.utils.logging import configure_logging, get_logger
-
 
 configure_logging()
 logger = get_logger(__name__)
@@ -41,66 +46,71 @@ RENAME_MAP = {
 }
 
 CAST_RULES = {
-    'olist_customers_dataset.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['customer_id', 'customer_unique_id', 'customer_zip_code_prefix'],
-        'numeric_cols': []
-        },
-    'olist_geolocation_dataset.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['geolocation_zip_code_prefix'],
-        'numeric_cols': ['geolocation_lat', 'geolocation_lng']
-        },
-    'olist_order_items_dataset.parquet': {
-        'datetime_cols': ['shipping_limit_date'],
-        'string_cols': ['order_id', 'product_id', 'seller_id'],
-        'numeric_cols': ['price', 'freight_value', 'order_item_id']
-        },
-    'olist_order_payments_dataset.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['order_id'],
-        'numeric_cols': ['payment_installments', 'payment_value', 'payment_sequential']
-        },
-    'olist_order_reviews_dataset.parquet': {
-        'datetime_cols': ['review_creation_date', 'review_answer_timestamp'],
-        'string_cols': ['review_id', 'order_id'],
-        'numeric_cols': ['review_score']
-        },
-    'olist_orders_dataset.parquet': {
-        'datetime_cols': [
-            'order_purchase_timestamp',
-            'order_approved_at',
-            'order_delivered_carrier_date',
-            'order_delivered_customer_date',
-            'order_estimated_delivery_date'
-            ],
-        'string_cols': ['order_id', 'customer_id', 'order_status'],
-        'numeric_cols': []
-        },
-    'olist_products_dataset.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['product_id', 'product_category_name'],
-        'numeric_cols': [
-            'product_name_length',
-            'product_description_length',
-            'product_photos_qty',
-            'product_weight_g',
-            'product_length_cm',
-            'product_height_cm',
-            'product_width_cm'
-            ]
-        },
-    'olist_sellers_dataset.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['seller_id', 'seller_zip_code_prefix'],
-        'numeric_cols': []
-        },
-    'product_category_name_translation.parquet': {
-        'datetime_cols': [],
-        'string_cols': ['product_category_name', 'product_category_name_english'],
-        'numeric_cols': []
+    "olist_customers_dataset.parquet": {
+        "datetime_cols": [],
+        "string_cols": [
+            "customer_id",
+            "customer_unique_id",
+            "customer_zip_code_prefix",
+        ],
+        "numeric_cols": [],
+    },
+    "olist_geolocation_dataset.parquet": {
+        "datetime_cols": [],
+        "string_cols": ["geolocation_zip_code_prefix"],
+        "numeric_cols": ["geolocation_lat", "geolocation_lng"],
+    },
+    "olist_order_items_dataset.parquet": {
+        "datetime_cols": ["shipping_limit_date"],
+        "string_cols": ["order_id", "product_id", "seller_id"],
+        "numeric_cols": ["price", "freight_value", "order_item_id"],
+    },
+    "olist_order_payments_dataset.parquet": {
+        "datetime_cols": [],
+        "string_cols": ["order_id"],
+        "numeric_cols": ["payment_installments", "payment_value", "payment_sequential"],
+    },
+    "olist_order_reviews_dataset.parquet": {
+        "datetime_cols": ["review_creation_date", "review_answer_timestamp"],
+        "string_cols": ["review_id", "order_id"],
+        "numeric_cols": ["review_score"],
+    },
+    "olist_orders_dataset.parquet": {
+        "datetime_cols": [
+            "order_purchase_timestamp",
+            "order_approved_at",
+            "order_delivered_carrier_date",
+            "order_delivered_customer_date",
+            "order_estimated_delivery_date",
+        ],
+        "string_cols": ["order_id", "customer_id", "order_status"],
+        "numeric_cols": [],
+    },
+    "olist_products_dataset.parquet": {
+        "datetime_cols": [],
+        "string_cols": ["product_id", "product_category_name"],
+        "numeric_cols": [
+            "product_name_length",
+            "product_description_length",
+            "product_photos_qty",
+            "product_weight_g",
+            "product_length_cm",
+            "product_height_cm",
+            "product_width_cm",
+        ],
+    },
+    "olist_sellers_dataset.parquet": {
+        "datetime_cols": [],
+        "string_cols": ["seller_id", "seller_zip_code_prefix"],
+        "numeric_cols": [],
+    },
+    "product_category_name_translation.parquet": {
+        "datetime_cols": [],
+        "string_cols": ["product_category_name", "product_category_name_english"],
+        "numeric_cols": [],
     },
 }
+
 
 def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     rules = CAST_RULES.get(filename, {})
@@ -164,7 +174,6 @@ def main() -> None:
         except Exception:
             logger.exception("Write failed: %s", out_path)
             raise
-
 
         logger.info("Wrote %s", out_path)
 

@@ -12,7 +12,6 @@ Notes:
 
 from __future__ import annotations
 
-
 SCHEMA_CONTRACT: dict[str, dict] = {
     # -----------------------------
     # Core dimension tables
@@ -137,9 +136,18 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "order_purchase_timestamp": {"dtype_family": "datetime", "nullable": False},
             # meaningful nulls: some orders may not have approval or delivery timestamps
             "order_approved_at": {"dtype_family": "datetime", "nullable": True},
-            "order_delivered_carrier_date": {"dtype_family": "datetime", "nullable": True},
-            "order_delivered_customer_date": {"dtype_family": "datetime", "nullable": True},
-            "order_estimated_delivery_date": {"dtype_family": "datetime", "nullable": False},
+            "order_delivered_carrier_date": {
+                "dtype_family": "datetime",
+                "nullable": True,
+            },
+            "order_delivered_customer_date": {
+                "dtype_family": "datetime",
+                "nullable": True,
+            },
+            "order_estimated_delivery_date": {
+                "dtype_family": "datetime",
+                "nullable": False,
+            },
         },
         "foreign_keys": [
             {
@@ -200,7 +208,11 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "order_id": {"dtype_family": "str", "nullable": False},
             "payment_sequential": {"dtype_family": "numeric", "nullable": False},
             "payment_type": {"dtype_family": "str", "nullable": False},
-            "payment_installments": {"dtype_family": "numeric", "nullable": False, "min": 0},
+            "payment_installments": {
+                "dtype_family": "numeric",
+                "nullable": False,
+                "min": 0,
+            },
             "payment_value": {"dtype_family": "numeric", "nullable": False, "min": 0},
         },
         "foreign_keys": [
@@ -225,7 +237,12 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         "columns": {
             "review_id": {"dtype_family": "str", "nullable": False},
             "order_id": {"dtype_family": "str", "nullable": False},
-            "review_score": {"dtype_family": "numeric", "nullable": False, "min": 1, "max": 5},
+            "review_score": {
+                "dtype_family": "numeric",
+                "nullable": False,
+                "min": 1,
+                "max": 5,
+            },
             # nullable is expected in the source dataset
             "review_comment_title": {"dtype_family": "str", "nullable": True},
             "review_comment_message": {"dtype_family": "str", "nullable": True},
