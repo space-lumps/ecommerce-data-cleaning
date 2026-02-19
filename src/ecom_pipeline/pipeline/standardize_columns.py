@@ -15,7 +15,7 @@ Why this step exists:
 from pathlib import Path
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir
+from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir, write_parquet
 
 
 # -------------------------
@@ -29,6 +29,7 @@ REPO_ROOT = repo_root()
 RAW = raw_dir()
 
 # Lightly cleaned outputs (still one file per source table)
+
 INTERIM = interim_dir()
 
 # Ensure the interim directory exists so the script is re-runnable
@@ -106,7 +107,7 @@ def main() -> None:
         df = standardize_columns(df)
 
         try:
-            df.to_parquet(out_path, index=False)
+            write_parquet(df, out_path)
         except Exception as exc:
             raise SystemExit(f"Failed to write {out_path}:\n{exc}") from exc
 
