@@ -7,7 +7,6 @@ Centralized logging configuration for the pipeline.
 """
 
 import logging
-from pathlib import Path
 
 
 def configure_logging(level: int = logging.INFO) -> None:

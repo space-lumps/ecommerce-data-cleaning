@@ -12,7 +12,6 @@ Why this step exists:
 - separating 'raw' from 'interim' enforces pipeline discipline
 """
 
-from pathlib import Path
 import pandas as pd
 
 from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir, write_parquet

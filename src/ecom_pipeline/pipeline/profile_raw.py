@@ -20,7 +20,6 @@ Output:
 - reports/raw_profile.csv
 """
 
-from pathlib import Path
 import pandas as pd
 
 from ecom_pipeline.utils.io import repo_root, ensure_dir, raw_dir, reports_dir

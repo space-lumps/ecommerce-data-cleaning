@@ -11,8 +11,6 @@ Run from repo root:
     python src/00_sanity_check_raw.py
 """
 
-from pathlib import Path
-import sys
 import pandas as pd
 
 from ecom_pipeline.utils.io import repo_root, raw_dir

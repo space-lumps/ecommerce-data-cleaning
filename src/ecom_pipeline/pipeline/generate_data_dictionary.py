@@ -8,7 +8,7 @@ from ecom_pipeline.utils.io import repo_root, ensure_dir, reports_dir, docs_dir
 
 
 def main() -> None:
-    repo = repo_root()
+    repo_root()
     profile_path = reports_dir() / "raw_profile.csv"
     out_path = docs_dir() / "data_dictionary.md"
 

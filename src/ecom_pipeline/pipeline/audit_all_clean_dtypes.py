@@ -18,7 +18,6 @@ import pandas as pd
 
 from ecom_pipeline.utils.io import (
     repo_root,
-    read_parquet,
     write_csv,
     clean_dir,
     reports_dir,
