@@ -242,6 +242,20 @@ If any contract rule fails, the dataset is considered invalid.
 
 ---
 
+## Challenges and Learnings
+
+This project involved iterating on a real-world data cleaning pipeline, revealing several practical lessons in data engineering:
+
+- **Handling Inconsistent Data Types in Schema Validation**: Encountered nuances with Python/Pandas dtypes like "str" vs. "string" vs. "object"—e.g., CSV imports defaulting to "object" required explicit coercion in `enforce_schema.py` to match expected schemas, preventing downstream errors in analysis or ML workflows. This highlighted the importance of strict type enforcement early in pipelines.
+- **Balancing Reproducibility and Simplicity**: Setting up a virtual environment with `uv` for fast, locked dependencies was straightforward, but integrating environment variables (e.g., for data dirs) taught me about flexible config without hardcoding paths.
+- **Modular Design for Maintainability**: Structuring as a package with separate scripts for extraction, validation, and auditing improved testability, but required careful import management to avoid circular dependencies.
+- **Testing Real-World Data Quirks**: Sample CSVs had edge cases like missing values or inconsistent formats, reinforcing the need for audits and E2E tests to catch issues that unit tests might miss.
+- **Automation Trade-offs**: Implementing CI with GitHub Actions automated checks, but debugging workflow failures (e.g., env var mismatches) emphasized clear logging and isolation in tests.
+
+These experiences strengthened my approach to building robust, scalable data pipelines.
+
+---
+
 ## Future Improvements
 
 - Add foreign key integrity validation (cross-table checks)
