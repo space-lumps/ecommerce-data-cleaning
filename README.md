@@ -237,6 +237,7 @@ If any contract rule fails, the dataset is considered invalid.
 - Defensive data validation
 - Reproducible execution environments (`uv`)
 - Logging and structured reporting
+- Implemented E2E testing with pytest and CI via GitHub Actions for automated validation on samples
 - Clean project organization for portfolio use
 
 ---
