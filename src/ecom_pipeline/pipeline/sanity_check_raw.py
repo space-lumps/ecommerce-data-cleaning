@@ -15,13 +15,13 @@ from pathlib import Path
 import sys
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root
+from ecom_pipeline.utils.io import repo_root, raw_dir
 
 # Anchor execution to repo root (independent of working directory)
 REPO_ROOT = repo_root()
 
 # Immutable input data
-RAW = REPO_ROOT / "data" / "raw"
+RAW = raw_dir()
 
 # Pipeline file validation
 FILES = [

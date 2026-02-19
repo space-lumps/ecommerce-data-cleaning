@@ -22,7 +22,7 @@ from pandas.api.types import (
     is_string_dtype,
 )
 
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv, clean_dir, reports_dir
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
 
@@ -31,8 +31,8 @@ configure_logging()
 logger = get_logger(__name__)
 
 REPO_ROOT = repo_root()
-CLEAN = REPO_ROOT / "data" / "clean"
-OUT = REPO_ROOT / "reports"
+CLEAN = clean_dir()
+OUT = reports_dir()
 
 
 def dtype_family(series: pd.Series) -> str:

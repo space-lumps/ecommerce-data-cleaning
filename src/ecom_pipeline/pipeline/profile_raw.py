@@ -23,7 +23,7 @@ Output:
 from pathlib import Path
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, ensure_dir
+from ecom_pipeline.utils.io import repo_root, ensure_dir, raw_dir, reports_dir
 
 
 # -------------------------
@@ -31,8 +31,8 @@ from ecom_pipeline.utils.io import repo_root, ensure_dir
 # -------------------------
 
 REPO_ROOT = repo_root()
-RAW = REPO_ROOT / "data" / "raw"
-OUT = REPO_ROOT / "reports"
+RAW = raw_dir()
+OUT = reports_dir()
 
 
 # -------------------------

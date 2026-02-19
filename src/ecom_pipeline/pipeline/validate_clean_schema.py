@@ -16,7 +16,7 @@ Checks:
 import pandas as pd
 
 from ecom_pipeline.pipeline.enforce_schema import CAST_RULES
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_csv, clean_dir, reports_dir
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 
@@ -26,8 +26,8 @@ logger = get_logger(__name__)
 
 
 REPO_ROOT = repo_root()
-CLEAN = REPO_ROOT / "data" / "clean"
-OUT = REPO_ROOT / "reports"
+CLEAN = clean_dir()
+OUT = reports_dir()
 
 
 def dtype_family(dtype) -> str:

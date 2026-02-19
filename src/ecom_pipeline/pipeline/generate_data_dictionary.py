@@ -4,13 +4,13 @@ Generate docs/data_dictionary.md from reports/raw_profile.csv.
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, ensure_dir
+from ecom_pipeline.utils.io import repo_root, ensure_dir, reports_dir, docs_dir
 
 
 def main() -> None:
     repo = repo_root()
-    profile_path = repo / "reports" / "raw_profile.csv"
-    out_path = repo / "docs" / "data_dictionary.md"
+    profile_path = reports_dir() / "raw_profile.csv"
+    out_path = docs_dir() / "data_dictionary.md"
 
     df = pd.read_csv(profile_path)
 

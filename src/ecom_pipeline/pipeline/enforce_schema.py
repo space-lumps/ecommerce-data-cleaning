@@ -12,7 +12,7 @@ Policy:
 """
 
 import pandas as pd
-from ecom_pipeline.utils.io import repo_root, read_parquet, write_parquet
+from ecom_pipeline.utils.io import repo_root, read_parquet, write_parquet, interim_dir, clean_dir
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 
@@ -20,8 +20,8 @@ configure_logging()
 logger = get_logger(__name__)
 
 REPO_ROOT = repo_root()
-INTERIM = REPO_ROOT / "data" / "interim"
-CLEAN = REPO_ROOT / "data" / "clean"
+INTERIM = interim_dir()
+CLEAN = clean_dir()
 
 FILES = [
     "olist_orders_dataset.parquet",

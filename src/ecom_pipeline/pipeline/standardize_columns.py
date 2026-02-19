@@ -15,7 +15,7 @@ Why this step exists:
 from pathlib import Path
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root
+from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir
 
 
 # -------------------------
@@ -26,10 +26,10 @@ from ecom_pipeline.utils.io import repo_root
 REPO_ROOT = repo_root()
 
 # Immutable input data
-RAW = REPO_ROOT / "data" / "raw"
+RAW = raw_dir()
 
 # Lightly cleaned outputs (still one file per source table)
-INTERIM = REPO_ROOT / "data" / "interim"
+INTERIM = interim_dir()
 
 # Ensure the interim directory exists so the script is re-runnable
 # INTERIM.mkdir(parents=True, exist_ok=True)
