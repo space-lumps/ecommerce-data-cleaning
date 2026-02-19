@@ -17,11 +17,11 @@ import pandas as pd
 
 from ecom_pipeline.pipeline.enforce_schema import CAST_RULES
 from ecom_pipeline.utils.io import (
-    repo_root,
-    read_parquet,
-    write_csv,
     clean_dir,
+    read_parquet,
+    repo_root,
     reports_dir,
+    write_csv,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 

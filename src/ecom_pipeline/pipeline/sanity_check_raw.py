@@ -13,7 +13,7 @@ Run from repo root:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, raw_dir
+from ecom_pipeline.utils.io import raw_dir, repo_root
 
 # Anchor execution to repo root (independent of working directory)
 REPO_ROOT = repo_root()

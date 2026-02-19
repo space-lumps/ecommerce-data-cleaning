@@ -14,7 +14,7 @@ Why this step exists:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, raw_dir, interim_dir, write_parquet
+from ecom_pipeline.utils.io import interim_dir, raw_dir, repo_root, write_parquet
 
 # -------------------------
 # Directory configuration

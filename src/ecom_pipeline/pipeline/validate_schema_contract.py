@@ -22,15 +22,15 @@ from pandas.api.types import (
     is_string_dtype,
 )
 
+from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
 from ecom_pipeline.utils.io import (
-    repo_root,
-    read_parquet,
-    write_csv,
     clean_dir,
+    read_parquet,
+    repo_root,
     reports_dir,
+    write_csv,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
-from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
 
 configure_logging()
 logger = get_logger(__name__)
@@ -183,7 +183,7 @@ def main() -> None:
             if allowed_values is not None:
                 bad = ser.dropna()
                 bad = bad[~bad.isin(allowed_values)]
-                bad_count = int(len(bad))
+                bad_count = len(bad)
                 if bad_count > 0:
                     sample = "|".join(bad.astype(str).head(5).tolist())
                     fails += 1

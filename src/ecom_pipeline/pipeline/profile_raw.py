@@ -22,7 +22,7 @@ Output:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, ensure_dir, raw_dir, reports_dir
+from ecom_pipeline.utils.io import ensure_dir, raw_dir, repo_root, reports_dir
 
 # -------------------------
 # Directory configuration

@@ -2,9 +2,10 @@
 Shared file I/O utilities for the data pipeline.
 """
 
-from pathlib import Path
-import pandas as pd
 import os
+from pathlib import Path
+
+import pandas as pd
 
 
 def repo_root() -> Path:

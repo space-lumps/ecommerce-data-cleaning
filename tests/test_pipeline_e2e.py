@@ -11,22 +11,22 @@ This test:
 Ensures the pipeline runs end-to-end on sample data without errors.
 """
 
-import shutil
-import tempfile
 import os
-from pathlib import Path
+import shutil
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 
 def test_pipeline_runs_end_to_end() -> None:
     repo_root = Path(__file__).resolve().parents[1]
 
     with tempfile.TemporaryDirectory() as tmp:
-        tmp = Path(tmp)
+        tmp_path = Path(tmp)
 
-        raw_dir = tmp / "raw"
-        clean_dir = tmp / "clean"
+        raw_dir = tmp_path / "raw"
+        clean_dir = tmp_path / "clean"
 
         raw_dir.mkdir()
         clean_dir.mkdir()

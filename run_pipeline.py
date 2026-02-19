@@ -3,13 +3,13 @@ Run full ecom pipeline in order.
 """
 
 from ecom_pipeline.pipeline import (
-    sanity_check_raw,
-    profile_raw,
-    generate_data_dictionary,
-    standardize_columns,
-    enforce_schema,
-    validate_clean_schema,
     audit_all_clean_dtypes,
+    enforce_schema,
+    generate_data_dictionary,
+    profile_raw,
+    sanity_check_raw,
+    standardize_columns,
+    validate_clean_schema,
     validate_schema_contract,
 )
 

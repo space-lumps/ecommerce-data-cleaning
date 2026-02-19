@@ -4,7 +4,7 @@ Generate docs/data_dictionary.md from reports/raw_profile.csv.
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import repo_root, ensure_dir, reports_dir, docs_dir
+from ecom_pipeline.utils.io import docs_dir, ensure_dir, repo_root, reports_dir
 
 
 def main() -> None:

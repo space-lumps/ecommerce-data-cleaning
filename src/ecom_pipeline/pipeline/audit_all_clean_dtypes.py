@@ -14,13 +14,14 @@ Heuristics flag columns that *look* mis-typed:
 from __future__ import annotations
 
 import re
+
 import pandas as pd
 
 from ecom_pipeline.utils.io import (
-    repo_root,
-    write_csv,
     clean_dir,
+    repo_root,
     reports_dir,
+    write_csv,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 

@@ -12,12 +12,13 @@ Policy:
 """
 
 import pandas as pd
+
 from ecom_pipeline.utils.io import (
-    repo_root,
-    read_parquet,
-    write_parquet,
-    interim_dir,
     clean_dir,
+    interim_dir,
+    read_parquet,
+    repo_root,
+    write_parquet,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 
