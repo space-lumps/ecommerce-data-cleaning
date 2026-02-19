@@ -26,6 +26,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
+    { name = "pytest" },
 ]
 
 [package.optional-dependencies]
@@ -37,6 +38,7 @@ dev = [
 requires-dist = [
     { name = "pandas" },
     { name = "pyarrow" },
+    { name = "pytest" },
     { name = "pytest", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
