@@ -296,7 +296,10 @@ These experiences strengthened my approach to building robust, scalable data pip
 
 ## API Documentation
 
-- in progress
+The project is structured as an installable Python package (`ecom_pipeline`).
+
+Full API reference (auto-generated from docstrings):  
+→ [View API Documentation](docs/api/index.html)
 
 ---
 
