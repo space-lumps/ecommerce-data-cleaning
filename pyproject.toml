@@ -23,9 +23,20 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.mypy]
+python_version = "3.11"
+strict = false  # Start lenient to avoid overwhelming errors
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+show_error_codes = true
+files = ["src"]  # Only type-check the src/ package
+
 [dependency-groups]
 dev = [
     "black>=26.1.0",
+    "mypy>=1.19.1",
     "pdoc>=16.0.0",
     "ruff>=0.15.1",
 ]
