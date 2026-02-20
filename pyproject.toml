@@ -26,5 +26,6 @@ where = ["src"]
 [dependency-groups]
 dev = [
     "black>=26.1.0",
+    "pdoc>=16.0.0",
     "ruff>=0.15.1",
 ]
