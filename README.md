@@ -1,5 +1,31 @@
 # E-commerce Data Cleaning (Olist)
 
+[![CI](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml/badge.svg)](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+
+## Table of Contents
+
+- [Objective](#objective)
+- [Setup](#setup)
+- [Project Structure](#project-structure)
+- [Pipeline](#pipeline)
+- [Skills Demonstrated](#skills-demonstrated)
+- [Challenges and Insights](#challenges-and-learnings)
+- [API Documentation](#api-documentation)
+- [License](#license)
+
+## Quick Start
+
+```bash
+git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
+cd ecommerce-data-cleaning
+uv venv
+uv pip install -e .
+cp data/samples/*.csv data/raw/
+uv run python run_pipeline.py
+```
+
 ## Objective
 
 Build a reproducible, production-style data cleaning and validation pipeline for the Olist e-commerce dataset.
@@ -133,9 +159,6 @@ All reusable code lives inside the `ecom_pipeline` package.
 
 ---
 
-
----
-
 ## Dependency Files
 
 - `pyproject.toml` — Defines the installable package and dependencies.
@@ -147,7 +170,15 @@ For this project, `uv` + `pyproject.toml` + `uv.lock` are the authoritative inst
 
 ---
 
-## Execution
+## Pipeline
+
+### Execution
+
+Run the full pipeline:
+
+```bash
+uv run python run_pipeline.py
+```
 
 Run individual modules:
 
@@ -162,15 +193,9 @@ uv run python -m ecom_pipeline.pipeline.audit_all_clean_dtypes
 uv run python -m ecom_pipeline.pipeline.validate_schema_contract
 ```
 
-Run the full pipeline:
-
-```bash
-uv run python run_pipeline.py
-```
-
 ---
 
-## Pipeline Stages
+### Pipeline Stages
 
 1. **Sanity Check Raw**
   Confirms raw files exist and are readable.
@@ -191,7 +216,7 @@ uv run python run_pipeline.py
 
 ---
 
-## Outputs
+### Outputs
 
 - `data/clean/*.parquet`
 - `docs/data_dictionary.md`
@@ -203,21 +228,21 @@ uv run python run_pipeline.py
 
 ---
 
-## Validation & Schema Enforcement
+### Validation & Schema Enforcement
 
 The pipeline enforces structural guarantees after cleaning.
 
-### 1. Deterministic Type Casting
+#### 1. Deterministic Type Casting
 
 - Implemented in `enforce_schema.py`
 - Ensures consistent logical dtypes (str, datetime, numeric)
 
-### 2. Clean Schema Validation
+#### 2. Clean Schema Validation
 
 - Implemented in `validate_clean_schema.py`
 - Verifies expected dtype families after casting
 
-### 3. Schema Contract Validation
+#### 3. Schema Contract Validation
 
 - Implemented in `validate_schema_contract.py`
 - Enforces:
@@ -242,14 +267,18 @@ If any contract rule fails, the dataset is considered invalid.
 
 ---
 
-## Challenges and Learnings
+## Challenges and Insights
 
 This project involved iterating on a real-world data cleaning pipeline, revealing several practical lessons in data engineering:
 
 - **Handling Inconsistent Data Types in Schema Validation**: Encountered nuances with Python/Pandas dtypes like "str" vs. "string" vs. "object"—e.g., CSV imports defaulting to "object" required explicit coercion in `enforce_schema.py` to match expected schemas, preventing downstream errors in analysis or ML workflows. This highlighted the importance of strict type enforcement early in pipelines.
+
 - **Balancing Reproducibility and Simplicity**: Setting up a virtual environment with `uv` for fast, locked dependencies was straightforward, but integrating environment variables (e.g., for data dirs) taught me about flexible config without hardcoding paths.
+
 - **Modular Design for Maintainability**: Structuring as a package with separate scripts for extraction, validation, and auditing improved testability, but required careful import management to avoid circular dependencies.
+
 - **Testing Real-World Data Quirks**: Sample CSVs had edge cases like missing values or inconsistent formats, reinforcing the need for audits and E2E tests to catch issues that unit tests might miss.
+
 - **Automation Trade-offs**: Implementing CI with GitHub Actions automated checks, but debugging workflow failures (e.g., env var mismatches) emphasized clear logging and isolation in tests.
 
 These experiences strengthened my approach to building robust, scalable data pipelines.
@@ -262,3 +291,19 @@ These experiences strengthened my approach to building robust, scalable data pip
 - Add domain/value constraints (e.g., non-negative price, valid order_status domain)
 - Add CI pipeline (GitHub Actions) to run validation automatically
 - Optional: Integrate `dlt` for declarative pipeline orchestration
+
+---
+
+## API Documentation
+
+- in progress
+
+---
+
+## License
+
+MIT License
+
+Copyright (c) 2025 Corin Stedman
+
+See the [LICENSE](LICENSE) file for details.
