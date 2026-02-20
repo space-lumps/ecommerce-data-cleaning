@@ -126,33 +126,54 @@ data/samples/   # Static lightweight dataset (no Kaggle required)
 
 ```
 ecommerce-data-cleaning/
-│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── data/
-│   ├── raw/
-│   ├── interim/
 │   ├── clean/
+│   ├── interim/
+│   ├── raw/
 │   └── samples/
-│
-├── reports/
-├── tools/
+│       └── [sample CSV files]  # e.g., olist_orders_dataset.csv (truncated for brevity)
 ├── docs/
+│   ├── api/
+│   │   └── [generated API docs]  # e.g., index.html (via pdoc)
 │   ├── data_dictionary.md
-│   ├── validation_strategy.md
-│   └── schema_contract.md
-│
+│   ├── schema_contract.md
+│   └── validation_strategy.md
+├── reports/
+│   └── [generated reports]  # e.g., raw_profile.csv (generated at runtime)
 ├── src/
 │   └── ecom_pipeline/
+│       ├── __init__.py
 │       ├── config/
-│       ├── validation/
-│       ├── utils/
-│       └── pipeline/
-│
-├── run_pipeline.py
+│       │   ├── __init__.py
+│       │   └── schema_contract.py
+│       ├── pipeline/
+│       │   ├── __init__.py
+│       │   ├── audit_all_clean_dtypes.py
+│       │   ├── enforce_schema.py
+│       │   ├── generate_data_dictionary.py
+│       │   ├── profile_raw.py
+│       │   ├── sanity_check_raw.py
+│       │   ├── standardize_columns.py
+│       │   ├── validate_clean_schema.py
+│       │   └── validate_schema_contract.py
+│       └── utils/
+│           ├── __init__.py
+│           ├── io.py
+│           └── logging.py
+├── tests/
+│   └── test_pipeline_e2e.py
+├── .gitignore
+├── .ruff.toml
+├── LICENSE
+├── README.md
 ├── pyproject.toml
-├── requirements.txt
 ├── requirements-lock.txt
-├── uv.lock
-└── README.md
+├── requirements.txt
+├── run_pipeline.py
+└── uv.lock
 ```
 The project follows a proper `src/` layout.  
 All reusable code lives inside the `ecom_pipeline` package.
