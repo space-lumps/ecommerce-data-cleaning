@@ -13,6 +13,8 @@ Checks:
 - numeric_cols are not object/str (float/int ok)
 """
 
+from typing import Any
+
 import pandas as pd
 
 from ecom_pipeline.pipeline.enforce_schema import CAST_RULES
@@ -48,7 +50,9 @@ def dtype_family(dtype) -> str:
 
 
 def main() -> None:
-    rows = []
+    rows: list[
+        dict[str, Any]
+    ] = []  # allows for any type in dictionary values (we use string and bool)
 
     for filename, rules in CAST_RULES.items():
         path = CLEAN / filename
