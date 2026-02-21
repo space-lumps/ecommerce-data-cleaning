@@ -37,6 +37,7 @@ files = ["src"]  # Only type-check the src/ package
 dev = [
     "black>=26.1.0",
     "mypy>=1.19.1",
+    "pandas-stubs>=3.0.0.260204",
     "pdoc>=16.0.0",
     "ruff>=0.15.1",
 ]
