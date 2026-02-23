@@ -24,4 +24,4 @@ jobs:
       - name: Run tests (sample dataset)
         env:
           ECOM_RAW_DIR: data/samples
-        run: uv run pytest -q
+        run: uv run pytest # -q
