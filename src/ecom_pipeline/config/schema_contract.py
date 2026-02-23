@@ -28,7 +28,7 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         "columns": {
             "customer_id": {"dtype_family": "str", "nullable": False},
             "customer_unique_id": {"dtype_family": "str", "nullable": False},
-            # keep as str to preserve leading zeros and avoid accidental numeric coercion
+            # keep as str to preserve leading zeros & avoid accidental numeric coercion
             "customer_zip_code_prefix": {"dtype_family": "str", "nullable": False},
             "customer_city": {"dtype_family": "str", "nullable": False},
             "customer_state": {"dtype_family": "str", "nullable": False},
@@ -64,7 +64,7 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         ],
         "columns": {
             "product_id": {"dtype_family": "str", "nullable": False},
-            # category is nullable in raw; do not force imputation unless you explicitly choose to
+            # category is nullable in raw; do not force imputation
             "product_category_name": {"dtype_family": "str", "nullable": True},
             "product_name_length": {"dtype_family": "numeric", "nullable": True},
             "product_description_length": {"dtype_family": "numeric", "nullable": True},
