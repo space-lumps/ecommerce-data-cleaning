@@ -165,7 +165,6 @@ ecommerce-data-cleaning/
 ├── tests/
 │   ├── test_io.py                 # smoke tests for io utils
 │   └── test_pipeline_e2e.py       # end-to-end pipeline smoke test
-
 ├── .pre-commit-config.yaml
 ├── .gitignore
 ├── .ruff.toml
