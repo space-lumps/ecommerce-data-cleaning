@@ -6,7 +6,8 @@ This test:
 - Copies sample CSVs from data/samples into a temp raw/ directory
 - Sets environment variables to point the pipeline at the temp directories
 - Executes the entire pipeline via subprocess
-- Verifies successful completion (no exceptions) and presence of expected Parquet outputs
+- Verifies successful completion (no exceptions) and presence of expected
+  Parquet outputs
 
 Ensures the pipeline runs end-to-end on sample data without errors.
 """
