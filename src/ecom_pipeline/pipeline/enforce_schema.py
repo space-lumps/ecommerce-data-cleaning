@@ -11,6 +11,8 @@ Policy:
 - Strict: stop on any read/cast/write failure to avoid partial clean outputs.
 """
 
+import time
+
 import pandas as pd
 
 from ecom_pipeline.utils.io import (
@@ -117,6 +119,21 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     rules = CAST_RULES.get(filename, {})
     df = df.copy()
 
+    start_time = time.time()
+    initial_rows = len(df)
+    initial_nulls = df.isna().sum().sum()
+    initial_null_pct = (
+        (initial_nulls / (initial_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
+    )
+
+    logger.info(
+        "Starting schema enforcement for %s | rows=%s | nulls=%s (%.2f%% avg)",
+        filename,
+        f"{initial_rows:,}",
+        f"{initial_nulls:,}",
+        initial_null_pct,
+    )
+
     for col in rules.get("string_cols", []):
         if col in df.columns:
             df[col] = df[col].astype("str")
@@ -128,6 +145,37 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     for col in rules.get("numeric_cols", []):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    final_rows = len(df)
+    final_nulls = df.isna().sum().sum()
+    final_null_pct = (
+        (final_nulls / (final_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
+    )
+
+    null_change = final_nulls - initial_nulls
+    null_reduction_pct = (
+        ((initial_nulls - final_nulls) / initial_nulls * 100)
+        if initial_nulls > 0
+        else 0.0
+    )
+
+    duration = time.time() - start_time
+
+    logger.info(
+        "Finished schema enforcement for %s | duration=%.2fs | rows=%s | nulls=%s → %s",
+        filename,
+        duration,
+        f"{final_rows:,}",
+        f"{initial_nulls:,}",
+        f"{final_nulls:,}",
+    )
+    logger.info(
+        "change=%+d | reduction=%.1f%% | avg null pct=%.2f%% → %.2f%%",
+        null_change,
+        null_reduction_pct,
+        initial_null_pct,
+        final_null_pct,
+    )
 
     return df
 
