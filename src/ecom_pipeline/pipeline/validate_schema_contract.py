@@ -45,8 +45,8 @@ def dtype_family(series: pd.Series) -> str:
     Map pandas dtype to a logical family.
 
     Notes:
-    - 'str' accepts pandas string dtype and object dtype (object is common when reading parquet/csv).
-      If you want to enforce strictly pandas string dtype later, add a stricter rule.
+    - 'str' accepts pandas string dtype and object dtype
+      (object is common when reading parquet/csv).
     """
     if is_datetime64_any_dtype(series.dtype):
         return "datetime"
@@ -138,7 +138,11 @@ def main() -> None:
                         "check": "dtype_family",
                         "column": col,
                         "status": "fail",
-                        "details": f"expected={expected_family} actual={actual_family} pandas_dtype={ser.dtype}",
+                        "details": (
+                            f"expected={expected_family} "
+                            f"actual={actual_family} "
+                            f"pandas_dtype={ser.dtype}"
+                        ),
                     }
                 )
             else:
@@ -148,7 +152,9 @@ def main() -> None:
                         "check": "dtype_family",
                         "column": col,
                         "status": "pass",
-                        "details": f"expected={expected_family} actual={actual_family}",
+                        "details": (
+                            f"expected={expected_family} actual={actual_family}"
+                        ),
                     }
                 )
 
@@ -342,7 +348,12 @@ def main() -> None:
                         "table": table_name,
                         "check": "foreign_key_integrity",
                         "status": "fail",
-                        "details": f"from_cols={from_cols} to_table={to_table} orphan_count={orphan_count} sample={sample}",
+                        "details": (
+                            f"from_cols={from_cols} "
+                            f"to_table={to_table} "
+                            f"orphan_count={orphan_count} "
+                            f"sample={sample}"
+                        ),
                     }
                 )
             else:
