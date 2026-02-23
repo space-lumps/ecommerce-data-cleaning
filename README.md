@@ -20,9 +20,18 @@
 ```bash
 git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
 cd ecommerce-data-cleaning
+
+# Create & activate virtual environment (recommended: uv)
 uv venv
+source .venv/bin/activate   # or .venv\Scripts\activate on Windows
+
+# Install dependencies + editable package
 uv pip install -e .
+
+# Copy sample data (no Kaggle needed)
 cp data/samples/*.csv data/raw/
+
+# Run the full pipeline
 uv run python run_pipeline.py
 ```
 
@@ -49,16 +58,6 @@ This project demonstrates:
 git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
 cd ecommerce-data-cleaning
 ```
-
----
-
-## Environment Setup (uv)
-
-```bash
-uv venv
-uv pip install -e .
-```
-This installs the ecom_pipeline package locally so modules can be executed without modifying `PYTHONPATH`.
 
 ---
 
@@ -164,7 +163,9 @@ ecommerce-data-cleaning/
 │           ├── io.py
 │           └── logging.py
 ├── tests/
+│   ├── test_io.py
 │   └── test_pipeline_e2e.py
+├── .pre-commit-config.yaml
 ├── .gitignore
 ├── .ruff.toml
 ├── LICENSE
@@ -177,6 +178,7 @@ ecommerce-data-cleaning/
 ```
 The project follows a proper `src/` layout.  
 All reusable code lives inside the `ecom_pipeline` package.
+Tests live in a top-level `tests/` directory.
 
 ---
 
@@ -304,10 +306,11 @@ These experiences strengthened my approach to building robust, scalable data pip
 
 ## Future Improvements
 
-- Add foreign key integrity validation (cross-table checks)
+- Add foreign key integrity validation (cross-table checks – partially implemented)
 - Add domain/value constraints (e.g., non-negative price, valid order_status domain)
-- Add CI pipeline (GitHub Actions) to run validation automatically
-- Optional: Integrate `dlt` for declarative pipeline orchestration
+- Optional: Add test coverage reporting to CI (pytest-cov)
+- Optional: Containerize with Dockerfile
+- Explore dlt for declarative orchestration (in a separate branch)
 
 ---
 
