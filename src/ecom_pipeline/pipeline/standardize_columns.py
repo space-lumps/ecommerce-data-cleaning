@@ -88,7 +88,7 @@ def main() -> None:
     """
     # Failure policy:
     # - Strict in this stage because it produces pipeline inputs for downstream steps.
-    # - If any table fails to read/write, we stop to avoid partial/invalid interim state.
+    # - If any table fails to read/write, we stop to avoid invalid interim state.
 
     for filename in FILES:
         in_path = RAW / filename
