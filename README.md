@@ -133,15 +133,15 @@ ecommerce-data-cleaning/
 │   ├── interim/
 │   ├── raw/
 │   └── samples/
-│       └── [sample CSV files]  # e.g., olist_orders_dataset.csv (truncated for brevity)
+│       └── [sample CSV files]     # e.g., olist_orders_dataset.csv (truncated for brevity)
 ├── docs/
 │   ├── api/
-│   │   └── [generated API docs]  # e.g., index.html (via pdoc)
+│   │   └── [generated API docs]   # e.g., index.html (via pdoc)
 │   ├── data_dictionary.md
 │   ├── schema_contract.md
 │   └── validation_strategy.md
 ├── reports/
-│   └── [generated reports]  # e.g., raw_profile.csv (generated at runtime)
+│   └── [generated reports]        # e.g., raw_profile.csv (generated at runtime)
 ├── src/
 │   └── ecom_pipeline/
 │       ├── __init__.py
@@ -163,8 +163,9 @@ ecommerce-data-cleaning/
 │           ├── io.py
 │           └── logging.py
 ├── tests/
-│   ├── test_io.py
-│   └── test_pipeline_e2e.py
+│   ├── test_io.py                 # smoke tests for io utils
+│   └── test_pipeline_e2e.py       # end-to-end pipeline smoke test
+
 ├── .pre-commit-config.yaml
 ├── .gitignore
 ├── .ruff.toml
