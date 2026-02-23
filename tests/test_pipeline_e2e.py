@@ -28,9 +28,13 @@ def test_pipeline_runs_end_to_end() -> None:
 
         raw_dir = tmp_path / "raw"
         clean_dir = tmp_path / "clean"
+        reports_dir = tmp_path / "reports"
+        docs_dir = tmp_path / "docs"
 
         raw_dir.mkdir()
         clean_dir.mkdir()
+        reports_dir.mkdir()
+        docs_dir.mkdir()
 
         # Copy samples into temp raw dir
         samples_dir = repo_root / "data" / "samples"
@@ -40,6 +44,8 @@ def test_pipeline_runs_end_to_end() -> None:
         env = os.environ.copy()
         env["ECOM_RAW_DIR"] = str(raw_dir)
         env["ECOM_CLEAN_DIR"] = str(clean_dir)
+        env["ECOM_REPORTS_DIR"] = str(reports_dir)
+        env["ECOM_DOCS_DIR"] = str(docs_dir)
 
         subprocess.run(
             [sys.executable, "run_pipeline.py"],
