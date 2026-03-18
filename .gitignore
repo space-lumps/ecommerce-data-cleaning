@@ -9,9 +9,11 @@ data/interim/
 
 # Cleaned data (files are still large)
 data/clean/
+data/exported_for_viz/
 
 # Utilities used in development
 tools/
+scripts/
 
 # OS files
 .DS_Store
