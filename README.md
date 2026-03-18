@@ -1,10 +1,10 @@
 # E-commerce Data Cleaning (Olist)
 
-[![CI](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml/badge.svg)](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml/badge.svg)](https://github.com/space-lumps/ecommerce-data-cleaning/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![Release](https://img.shields.io/github/v/release/space-lumps/ecommerce-data-cleaning?include_prereleases)](https://github.com/space-lumps/ecommerce-data-cleaning/releases/latest)
 
-Latest release: [v1.0.0-portfolio-ready](https://github.com/space-lumps/ecommerce-data-cleaning/releases/tag/v1.0.0-portfolio-ready)
 
 ## Table of Contents
 
