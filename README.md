@@ -52,6 +52,20 @@ This project demonstrates:
 
 ---
 
+## Exploratory Visualization: Revenue by Brazilian State
+
+One exploratory view created using Tableau to validate the cleaned data output:
+
+![Revenue by Brazilian State](assets/images/sales-revenue-by-brazilian-state.png)
+
+- Choropleth map showing total revenue concentration across states (darker shades = higher revenue).
+- São Paulo dominates, consistent with Olist's customer distribution.
+- Built using aggregated revenue (SUM(price)) and customer state from the cleaned dataset.
+
+Future interactive dashboard development will use Looker Studio.
+
+---
+
 ## Setup
 
 ### Clone the repository
