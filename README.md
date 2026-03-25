@@ -267,30 +267,33 @@ uv run python -m ecom_pipeline.pipeline.validate_schema_contract
 
 ---
 
-### Validation & Schema Enforcement
+## Validation & Schema Enforcement
 
-The pipeline enforces structural guarantees after cleaning.
+The pipeline now features significantly improved schema enforcement and type handling:
 
-#### 1. Deterministic Type Casting
+### Key Improvements in This Update
+- **Explicit nullable types**: Integer columns are now consistently cast to `Int64`, floats to `Float64`, and strings to the modern nullable `string` dtype.
+- Prevents pandas from silently converting integer columns to `float64` when missing values (NaNs) are present.
+- Much cleaner and more reliable types when loading into BigQuery and Looker Studio (especially `INT64` instead of `FLOAT64`).
+- Improved `dtype_family` logic and display cleaning so reports and the data dictionary are consistent.
+- Updated `generate_data_dictionary.py` to use the clean audit instead of raw profile.
 
-- Implemented in `enforce_schema.py`
-- Ensures consistent logical dtypes (str, datetime, numeric)
+### Pipeline Stages (Updated)
+1. Sanity Check Raw  
+2. Profile Raw  
+3. **Enforce Schema** (`enforce_schema.py`) – applies nullable dtypes  
+4. **Validate Clean Schema** (`validate_clean_schema.py`)  
+5. **Audit Dtypes** (`audit_all_clean_dtypes.py`) – now includes null statistics  
+6. Generate Data Dictionary (now based on cleaned data)  
+7. Schema Contract Validation
 
-#### 2. Clean Schema Validation
+### Outputs
+- `data/clean/*.parquet` – production-ready files with correct nullable types
+- `docs/data_dictionary.md` – living, accurate documentation of the final schema
+- `reports/clean_dtypes_full.csv` – detailed audit with null counts/percentages
+- `reports/clean_schema_audit.csv` – pass/fail validation of expected types
 
-- Implemented in `validate_clean_schema.py`
-- Verifies expected dtype families after casting
-
-#### 3. Schema Contract Validation
-
-- Implemented in `validate_schema_contract.py`
-- Enforces:
-  - Required columns
-  - Primary key uniqueness
-  - Logical dtype expectations
-  - Structural dataset integrity
-
-If any contract rule fails, the dataset is considered invalid.
+This refactor makes the cleaning pipeline more robust, reproducible, and visualization-ready.
 
 ---
 
