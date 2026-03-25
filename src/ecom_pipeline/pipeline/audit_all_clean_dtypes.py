@@ -1,14 +1,14 @@
 """
-Audit all columns in clean Olist tables.
+Audit all columns in the cleaned Olist tables.
 
 Output:
 - reports/clean_dtypes_full.csv (one row per file+column)
 - reports/clean_dtypes_flags.csv (only suspicious columns)
 
-Heuristics flag columns that *look* mis-typed:
-- *_id or *zip* should be str (not numeric)
-- *_date / *timestamp* should be datetime (not object/str)
-- numeric-like columns stored as object/str
+Notes:
+- Uses the final cleaned dtypes from enforce_schema.py (nullable Int64/Float64/string)
+- dtype column shows the cleaned display version (always "string" for string columns)
+- dtype_family groups types into simple families for validation and reporting
 """
 
 from __future__ import annotations
@@ -17,22 +17,15 @@ import re
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import (
-    clean_dir,
-    repo_root,
-    reports_dir,
-    write_csv,
-)
+from ecom_pipeline.utils.io import clean_dir, repo_root, reports_dir, write_csv
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 configure_logging()
 logger = get_logger(__name__)
 
-
 REPO_ROOT = repo_root()
 CLEAN = clean_dir()
 OUT = reports_dir()
-
 
 ID_RE = re.compile(r".*_id$|.*zip.*|.*postal.*", re.IGNORECASE)
 DT_RE = re.compile(
@@ -40,7 +33,6 @@ DT_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Common numeric patterns in Olist; expand if needed
 NUM_RE = re.compile(
     r"(^price$|^freight_value$|^payment_value$|^payment_installments$|^review_score$|"
     r".*weight.*|.*length.*|.*height.*|.*width.*|.*photos.*|.*lat.*|.*lng.*|.*longitude.*|.*latitude.*)",
@@ -49,20 +41,18 @@ NUM_RE = re.compile(
 
 
 def dtype_family(dtype) -> str:
-    s = str(dtype)
-    # Explicit str (rare but safe to include)
-    if s == "str":
-        return "str"
-    # String family (modern + legacy)
-    if s == "object" or s.startswith("string"):
-        return "str"
+    """Return simple family name consistently."""
+    s = str(dtype).lower()
+
+    if s in {"string", "str"} or "string" in s or s == "object":
+        return "string"
     if s.startswith("datetime64"):
         return "datetime"
-    # Numeric family (numpy + pandas nullable)
-    if s in ("int64", "float64", "Int64", "Float64", "int32", "float32"):
-        return "numeric"
-    if s == "object":
-        return "object"
+    if "int" in s:
+        return "int"
+    if "float" in s:
+        return "float"
+
     return s
 
 
@@ -85,22 +75,27 @@ def main() -> None:
     for p in files:
         logger.info("Auditing %s", p.name)
 
-        try:
-            df = pd.read_parquet(p)
-        except Exception:
-            logger.exception("Read failed: %s", p)
-            raise
+        df = pd.read_parquet(p)
 
         for col in df.columns:
+            total_rows = len(df)
+            null_count = int(df[col].isna().sum())
+            null_pct = round((null_count / total_rows) * 100, 4) if total_rows else 0.0
+
             fam = dtype_family(df[col].dtype)
             sample = sample_non_null(df, col)
+
+            # Clean dtype for consistent display in reports
+            cleaned_dtype = str(df[col].dtype)
+            if cleaned_dtype.startswith("string") or cleaned_dtype == "str":
+                cleaned_dtype = "string"
 
             # Heuristic expectations
             exp = None
             if col == "order_item_id":
                 exp = "numeric"
             elif ID_RE.match(col):
-                exp = "str"
+                exp = "string"
             elif DT_RE.match(col):
                 exp = "datetime"
             elif NUM_RE.match(col):
@@ -109,25 +104,26 @@ def main() -> None:
             flag = False
             reason = ""
 
-            if exp == "str" and fam != "str":
+            if exp == "string" and fam != "string":
                 flag = True
-                reason = "expected str (id/zip-like)"
+                reason = "expected string (id/zip-like)"
             elif exp == "datetime" and fam != "datetime":
                 flag = True
                 reason = "expected datetime (date-like)"
-            elif exp == "numeric" and fam not in ("numeric",):
-                # Allow numeric only; object/str is suspicious
-                if fam in ("object", "str"):
+            elif exp == "numeric" and fam not in ("int", "float"):
+                if fam in ("object", "string"):
                     flag = True
                     reason = "expected numeric (measure-like)"
 
             row = {
                 "file": p.name,
                 "column": col,
-                "dtype": str(df[col].dtype),
+                "dtype": cleaned_dtype,
                 "dtype_family": fam,
                 "expected_family_heuristic": exp or "",
                 "sample_values": sample,
+                "null_count": null_count,
+                "null_pct": null_pct,
                 "flagged": flag,
                 "flag_reason": reason,
             }
@@ -138,7 +134,6 @@ def main() -> None:
     full_path = OUT / "clean_dtypes_full.csv"
     flags_path = OUT / "clean_dtypes_flags.csv"
 
-    # Force consistent columns so the flags CSV still has headers even when empty
     columns = [
         "file",
         "column",
@@ -146,21 +141,14 @@ def main() -> None:
         "dtype_family",
         "expected_family_heuristic",
         "sample_values",
+        "null_count",
+        "null_pct",
         "flagged",
         "flag_reason",
     ]
 
-    try:
-        write_csv(pd.DataFrame(full_rows, columns=columns), full_path)
-    except Exception:
-        logger.exception("Write failed: %s", full_path)
-        raise
-
-    try:
-        write_csv(pd.DataFrame(flag_rows, columns=columns), flags_path)
-    except Exception:
-        logger.exception("Write failed: %s", flags_path)
-        raise
+    write_csv(pd.DataFrame(full_rows, columns=columns), full_path)
+    write_csv(pd.DataFrame(flag_rows, columns=columns), flags_path)
 
     logger.info("Wrote %s (rows=%s)", full_path, len(full_rows))
     logger.info("Wrote %s (flags=%s)", flags_path, len(flag_rows))

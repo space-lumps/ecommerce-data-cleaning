@@ -7,8 +7,14 @@ Input:
 Output:
 - data/clean/*.parquet (types normalized for joins/analytics)
 
-Policy:
-- Strict: stop on any read/cast/write failure to avoid partial clean outputs.
+Changes applied:
+- integer_cols → Int64 (nullable integer)
+- float_cols   → Float64 (nullable float)
+- string_cols  → string (nullable string)
+- datetime_cols → datetime64[ns] (nullable datetime)
+- Prevents pandas from silently converting integer columns to float
+  when NaNs are present
+- Ensures correct INT64 types when loaded into BigQuery and Looker Studio
 """
 
 import time
@@ -56,27 +62,32 @@ CAST_RULES = {
             "customer_unique_id",
             "customer_zip_code_prefix",
         ],
-        "numeric_cols": [],
+        "integer_cols": [],
+        "float_cols": [],
     },
     "olist_geolocation_dataset.parquet": {
         "datetime_cols": [],
         "string_cols": ["geolocation_zip_code_prefix"],
-        "numeric_cols": ["geolocation_lat", "geolocation_lng"],
+        "integer_cols": [],
+        "float_cols": ["geolocation_lat", "geolocation_lng"],
     },
     "olist_order_items_dataset.parquet": {
         "datetime_cols": ["shipping_limit_date"],
         "string_cols": ["order_id", "product_id", "seller_id"],
-        "numeric_cols": ["price", "freight_value", "order_item_id"],
+        "integer_cols": ["order_item_id"],
+        "float_cols": ["price", "freight_value"],
     },
     "olist_order_payments_dataset.parquet": {
         "datetime_cols": [],
         "string_cols": ["order_id"],
-        "numeric_cols": ["payment_installments", "payment_value", "payment_sequential"],
+        "integer_cols": ["payment_installments", "payment_sequential"],
+        "float_cols": ["payment_value"],
     },
     "olist_order_reviews_dataset.parquet": {
         "datetime_cols": ["review_creation_date", "review_answer_timestamp"],
         "string_cols": ["review_id", "order_id"],
-        "numeric_cols": ["review_score"],
+        "integer_cols": ["review_score"],
+        "float_cols": [],
     },
     "olist_orders_dataset.parquet": {
         "datetime_cols": [
@@ -87,12 +98,13 @@ CAST_RULES = {
             "order_estimated_delivery_date",
         ],
         "string_cols": ["order_id", "customer_id", "order_status"],
-        "numeric_cols": [],
+        "integer_cols": [],
+        "float_cols": [],
     },
     "olist_products_dataset.parquet": {
         "datetime_cols": [],
         "string_cols": ["product_id", "product_category_name"],
-        "numeric_cols": [
+        "integer_cols": [
             "product_name_length",
             "product_description_length",
             "product_photos_qty",
@@ -101,16 +113,19 @@ CAST_RULES = {
             "product_height_cm",
             "product_width_cm",
         ],
+        "float_cols": [],
     },
     "olist_sellers_dataset.parquet": {
         "datetime_cols": [],
         "string_cols": ["seller_id", "seller_zip_code_prefix"],
-        "numeric_cols": [],
+        "integer_cols": [],
+        "float_cols": [],
     },
     "product_category_name_translation.parquet": {
         "datetime_cols": [],
         "string_cols": ["product_category_name", "product_category_name_english"],
-        "numeric_cols": [],
+        "integer_cols": [],
+        "float_cols": [],
     },
 }
 
@@ -122,43 +137,36 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     start_time = time.time()
     initial_rows = len(df)
     initial_nulls = df.isna().sum().sum()
-    initial_null_pct = (
-        (initial_nulls / (initial_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
-    )
 
     logger.info(
-        "Starting schema enforcement for %s | rows=%s | nulls=%s (%.2f%% avg)",
+        "Starting schema enforcement for %s | rows=%s | nulls=%s",
         filename,
         f"{initial_rows:,}",
         f"{initial_nulls:,}",
-        initial_null_pct,
     )
 
+    # String columns - nullable string
     for col in rules.get("string_cols", []):
         if col in df.columns:
-            df[col] = df[col].astype("str")
+            df[col] = df[col].astype("string")
 
+    # Datetime columns - nullable datetime
     for col in rules.get("datetime_cols", []):
         if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+            df[col] = pd.to_datetime(df[col], errors="coerce").astype("datetime64[ns]")
 
-    for col in rules.get("numeric_cols", []):
+    # Integer columns - nullable Int64
+    for col in rules.get("integer_cols", []):
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int64")
+
+    # Float columns - nullable Float64
+    for col in rules.get("float_cols", []):
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
 
     final_rows = len(df)
     final_nulls = df.isna().sum().sum()
-    final_null_pct = (
-        (final_nulls / (final_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
-    )
-
-    null_change = final_nulls - initial_nulls
-    null_reduction_pct = (
-        ((initial_nulls - final_nulls) / initial_nulls * 100)
-        if initial_nulls > 0
-        else 0.0
-    )
-
     duration = time.time() - start_time
 
     logger.info(
@@ -168,13 +176,6 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
         f"{final_rows:,}",
         f"{initial_nulls:,}",
         f"{final_nulls:,}",
-    )
-    logger.info(
-        "change=%+d | reduction=%.1f%% | avg null pct=%.2f%% → %.2f%%",
-        null_change,
-        null_reduction_pct,
-        initial_null_pct,
-        final_null_pct,
     )
 
     return df
@@ -187,43 +188,14 @@ def main() -> None:
 
         logger.info("Processing %s", filename)
 
-        # -----------------
-        # Read
-        # -----------------
-        try:
-            df = read_parquet(in_path)
-        except Exception:
-            logger.exception("Read failed: %s", in_path)
-            raise
+        df = read_parquet(in_path)
 
-        # -----------------
-        # Rename (if needed)
-        # -----------------
         if filename == "olist_products_dataset.parquet":
-            before = set(df.columns)
             df = df.rename(columns=RENAME_MAP)
-            after = set(df.columns)
-            if before != after:
-                logger.info("Applied column rename map for %s", filename)
 
-        # -----------------
-        # Enforce schema
-        # -----------------
-        try:
-            df = enforce_schema(filename, df)
-        except Exception:
-            logger.exception("Schema enforcement failed: %s", filename)
-            raise
+        df = enforce_schema(filename, df)
 
-        # -----------------
-        # Write
-        # -----------------
-        try:
-            write_parquet(df, out_path)
-        except Exception:
-            logger.exception("Write failed: %s", out_path)
-            raise
-
+        write_parquet(df, out_path)
         logger.info("Wrote %s", out_path)
 
 

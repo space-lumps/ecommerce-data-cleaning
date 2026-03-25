@@ -1,5 +1,19 @@
 """
-Generate docs/data_dictionary.md from reports/raw_profile.csv.
+Generate docs/data_dictionary.md from the clean audit.
+
+This script creates the final data dictionary based on the cleaned tables
+(after enforce_schema.py has applied nullable types).
+
+Input:
+- reports/clean_dtypes_full.csv
+
+Output:
+- docs/data_dictionary.md
+
+Notes:
+- Uses the cleaned dtype display from audit_all_clean_dtypes.py
+- Shows final schema (nullable Int64, Float64, string, etc.)
+- This is the source of truth for the cleaned data used in BigQuery and Looker Studio
 """
 
 import pandas as pd
@@ -8,13 +22,15 @@ from ecom_pipeline.utils.io import docs_dir, ensure_dir, reports_dir
 
 
 def main() -> None:
-    profile_path = reports_dir() / "raw_profile.csv"
+    # Use the clean audit instead of raw profile
+    profile_path = reports_dir() / "clean_dtypes_full.csv"
     out_path = docs_dir() / "data_dictionary.md"
 
     if not profile_path.exists():
         raise FileNotFoundError(
             f"Input file not found: {profile_path}\n"
-            "Run profile_raw.py first to generate reports/raw_profile.csv"
+            "Run audit_all_clean_dtypes.py first to generate "
+            "reports/clean_dtypes_full.csv"
         )
 
     try:
@@ -22,7 +38,8 @@ def main() -> None:
     except Exception as exc:
         raise RuntimeError(
             f"Failed to read {profile_path}: {exc}\n"
-            "Check that the file exists and is a valid CSV from profile_raw.py"
+            "Check that the file exists and is a valid CSV "
+            "from audit_all_clean_dtypes.py"
         ) from exc
 
     # Keep only rows with actual columns
@@ -30,8 +47,6 @@ def main() -> None:
     lines: list[str] = []
 
     if df.empty:
-        print("Warning: No valid columns found in raw_profile.csv")
-        # Still write empty dictionary or exit gracefully
         lines.append("# Data Dictionary")
         lines.append("")
         lines.append("No data available.")
@@ -41,30 +56,39 @@ def main() -> None:
     # Order consistently
     df = df.sort_values(["file", "column"])
 
-    lines.append("# Data Dictionary")
+    lines.append("# Olist Ecommerce Clean Data Dictionary")
     lines.append("")
-    lines.append("Derived from `reports/raw_profile.csv`.")
+    lines.append("**Source of truth**: Final cleaned schema after `enforce_schema.py`")
+    lines.append("(nullable Int64, Float64, string, and datetime64[ns] types)")
+    lines.append("")
+    lines.append("Generated from `reports/clean_dtypes_full.csv`")
     lines.append("")
 
     for file_name, g in df.groupby("file", sort=True):
-        dataset = file_name.replace(".csv", "")  # type: ignore[union-attr,arg-type]
-        lines.append(f"## Dataset: {dataset}")  # type: ignore[str-bytes-safe]
+        dataset = file_name.replace(".parquet", "")
+        lines.append(f"## Dataset: {dataset}")
         lines.append("")
-        lines.append("| Column | Raw Dtype | Null % | Null Count |")
-        lines.append("|--------|-----------|--------|------------|")
+        lines.append("| Column | Clean Dtype | Null % | Null Count |")
+        lines.append("|--------|--------|--------|--------|")
 
         for _, r in g.iterrows():
             col = str(r["column"])
             dtype = str(r["dtype"])
-            null_pct_raw = float(r["null_pct"])
-            null_pct = f"{null_pct_raw:.4f}" if not pd.isna(null_pct_raw) else "0.0000"
+            null_pct = (
+                f"{float(r['null_pct']):.4f}"
+                if not pd.isna(r["null_pct"])
+                else "0.0000"
+            )
             null_count = int(r["null_count"])
+
             lines.append(f"| `{col}` | `{dtype}` | {null_pct} | {null_count} |")
 
         lines.append("")
 
     ensure_dir(out_path.parent)
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    print(f"✅ Data dictionary generated: {out_path}")
 
 
 if __name__ == "__main__":

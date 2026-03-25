@@ -38,11 +38,11 @@ STEPS = [
 def main() -> None:
     sanity_check_raw.main()
     profile_raw.main()
-    generate_data_dictionary.main()
     standardize_columns.main()
     enforce_schema.main()
     validate_clean_schema.main()
     audit_all_clean_dtypes.main()
+    generate_data_dictionary.main()
     validate_schema_contract.main()
 
     # ── Dynamic summary after all steps ──
