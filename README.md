@@ -240,30 +240,30 @@ uv run python -m ecom_pipeline.pipeline.validate_schema_contract
   Confirms raw files exist and are readable.
 2. **Profile Raw**
   Profiles source datasets before transformation.
-3. **Generate Data Dictionary**  
-  Generates `docs/data_dictionary.md` from `reports/raw_profile.csv`.
-4. **Standardize Columns**
+3. **Standardize Columns**
   Applies consistent column naming.
-5. **Enforce Schema**
-  Applies explicit casting rules to produce clean parquet outputs.
-6. **Validate Clean Schema**
+4. **Enforce Schema**
+Applies explicit casting rules (including strict `datetime64[ns]` handling) to produce clean parquet outputs.
+5. **Validate Clean Schema**
   Verifies data types match expectations.
-7. **Audit Dtypes**
+6. **Audit Dtypes**
   Flags suspicious type patterns using heuristics.
-8. **Validate Schema Contract**
+7. **Validate Schema Contract**
   Enforces required columns, primary key uniqueness, and logical dtype guarantees.
+8. **Generate Data Dictionary**  
+  Generates `docs/data_dictionary.md` from `reports/clean_dtypes_full.csv`.
 
 ---
 
 ### Outputs
 
 - `data/clean/*.parquet`
-- `docs/data_dictionary.md`
 - `reports/raw_profile.csv`
 - `reports/clean_schema_audit.csv`
 - `reports/clean_dtypes_full.csv`
 - `reports/clean_dtypes_flags.csv`
 - `reports/clean_contract_audit.csv`
+- `docs/data_dictionary.md`
 
 ---
 
@@ -274,7 +274,8 @@ The pipeline now features significantly improved schema enforcement and type han
 ### Key Improvements in This Update
 - **Explicit nullable types**: Integer columns are now consistently cast to `Int64`, floats to `Float64`, and strings to the modern nullable `string` dtype.
 - Prevents pandas from silently converting integer columns to `float64` when missing values (NaNs) are present.
-- Much cleaner and more reliable types when loading into BigQuery and Looker Studio (especially `INT64` instead of `FLOAT64`).
+- **Strict `datetime64[ns]` handling** for all timestamp columns to ensure correct `TIMESTAMP` / `DATETIME` types in BigQuery (fixed Parquet logical type metadata issue).
+- Much cleaner and more reliable types when loading into BigQuery and Looker Studio (especially `INT64` instead of `FLOAT64`, `TIMESTAMP` instead of `INTEGER`).
 - Improved `dtype_family` logic and display cleaning so reports and the data dictionary are consistent.
 - Updated `generate_data_dictionary.py` to use the clean audit instead of raw profile.
 

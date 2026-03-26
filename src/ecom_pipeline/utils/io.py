@@ -64,8 +64,25 @@ def read_parquet(path: Path) -> pd.DataFrame:
 
 
 def write_parquet(df: pd.DataFrame, path: Path) -> None:
+    """
+    Write DataFrame to Parquet file with settings optimized for BigQuery compatibility.
+
+    Key parameters:
+    - engine='pyarrow': Most reliable for timestamp handling
+    - compression='snappy': Good balance of speed and size
+    - use_deprecated_int96_timestamps=True: Critical fix for BigQuery to correctly
+      recognize datetime64[ns] columns as TIMESTAMP instead of INT64.
+
+    This addresses a common pandas/pyarrow → BigQuery interoperability issue
+    where timestamps lose their logical type metadata.
+    """
     ensure_dir(path.parent)
-    df.to_parquet(path, index=False)
+    df.to_parquet(
+        path,
+        engine="pyarrow",
+        compression="snappy",
+        use_deprecated_int96_timestamps=True,  # fix BigQuery timestamp parsing issue
+    )
 
 
 def write_csv(df: pd.DataFrame, path: Path) -> None:

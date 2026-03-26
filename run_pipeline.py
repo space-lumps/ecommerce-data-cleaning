@@ -42,8 +42,8 @@ def main() -> None:
     enforce_schema.main()
     validate_clean_schema.main()
     audit_all_clean_dtypes.main()
-    generate_data_dictionary.main()
     validate_schema_contract.main()
+    generate_data_dictionary.main()
 
     # ── Dynamic summary after all steps ──
     reports_path = Path("reports")

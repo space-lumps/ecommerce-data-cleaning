@@ -153,7 +153,10 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     # Datetime columns - nullable datetime
     for col in rules.get("datetime_cols", []):
         if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce").astype("datetime64[ns]")
+            # Force proper timestamp handling for Parquet + BigQuery
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+            # This line helps Arrow write the correct logical type
+            df[col] = df[col].dt.tz_localize(None).astype("datetime64[ns]")
 
     # Integer columns - nullable Int64
     for col in rules.get("integer_cols", []):
