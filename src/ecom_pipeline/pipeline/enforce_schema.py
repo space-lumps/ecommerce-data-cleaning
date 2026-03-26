@@ -60,16 +60,17 @@ CAST_RULES = {
         "string_cols": [
             "customer_id",
             "customer_unique_id",
-            "customer_zip_code_prefix",
         ],
         "integer_cols": [],
         "float_cols": [],
+        "zip_cols": ["customer_zip_code_prefix"],
     },
     "olist_geolocation_dataset.parquet": {
         "datetime_cols": [],
-        "string_cols": ["geolocation_zip_code_prefix"],
+        "string_cols": [],
         "integer_cols": [],
         "float_cols": ["geolocation_lat", "geolocation_lng"],
+        "zip_cols": ["geolocation_zip_code_prefix"],
     },
     "olist_order_items_dataset.parquet": {
         "datetime_cols": ["shipping_limit_date"],
@@ -117,9 +118,10 @@ CAST_RULES = {
     },
     "olist_sellers_dataset.parquet": {
         "datetime_cols": [],
-        "string_cols": ["seller_id", "seller_zip_code_prefix"],
+        "string_cols": ["seller_id"],
         "integer_cols": [],
         "float_cols": [],
+        "zip_cols": ["seller_zip_code_prefix"],
     },
     "product_category_name_translation.parquet": {
         "datetime_cols": [],
@@ -168,6 +170,14 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
 
+    # Force zip code prefixes to string and ensure leading zeros are preserved
+    # Brazilian CEP prefixes are 5 digits, many start with 0
+    # Use zfill to pad with leading zeros to 5 digits
+    for col in rules.get("zip_cols", []):
+        if col in df.columns:
+            df[col] = df[col].astype("string").str.zfill(5)
+            logger.info(f"Fixed leading zeros for {col} (zfill to 5 digits)")
+
     final_rows = len(df)
     final_nulls = df.isna().sum().sum()
     duration = time.time() - start_time
@@ -180,6 +190,49 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
         f"{initial_nulls:,}",
         f"{final_nulls:,}",
     )
+
+    # === ADD FULL BRAZILIAN STATE NAMES FOR BETTER BI VISUALIZATION ===
+    # This creates customer_state_name with full English names (e.g. "São Paulo")
+    # Looker Studio Filled maps recognize full state names much more reliably than "SP"
+    # We keep the original two-letter customer_state for any other analysis
+    if filename == "olist_customers_dataset.parquet":
+        state_name_map = {
+            "SP": "São Paulo",
+            "RJ": "Rio de Janeiro",
+            "MG": "Minas Gerais",
+            "RS": "Rio Grande do Sul",
+            "BA": "Bahia",
+            "PR": "Paraná",
+            "PE": "Pernambuco",
+            "CE": "Ceará",
+            "PA": "Pará",
+            "MA": "Maranhão",
+            "SC": "Santa Catarina",
+            "GO": "Goiás",
+            "DF": "Distrito Federal",
+            "ES": "Espírito Santo",
+            "PB": "Paraíba",
+            "RN": "Rio Grande do Norte",
+            "MT": "Mato Grosso",
+            "MS": "Mato Grosso do Sul",
+            "AL": "Alagoas",
+            "PI": "Piauí",
+            "SE": "Sergipe",
+            "TO": "Tocantins",
+            "RO": "Rondônia",
+            "AM": "Amazonas",
+            "AC": "Acre",
+            "AP": "Amapá",
+            "RR": "Roraima",
+        }
+
+        df["customer_state_name"] = (
+            df["customer_state"]
+            .map(state_name_map)
+            .fillna(df["customer_state"])  # fallback for any unexpected codes
+        )
+
+        logger.info("Added customer_state_name column with full Brazilian state names")
 
     return df
 

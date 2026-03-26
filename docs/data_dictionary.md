@@ -12,6 +12,7 @@ Generated from `reports/clean_dtypes_full.csv`
 | `customer_city` | `string` | 0.0000 | 0 |
 | `customer_id` | `string` | 0.0000 | 0 |
 | `customer_state` | `string` | 0.0000 | 0 |
+| `customer_state_name` | `string` | 0.0000 | 0 |
 | `customer_unique_id` | `string` | 0.0000 | 0 |
 | `customer_zip_code_prefix` | `string` | 0.0000 | 0 |
 

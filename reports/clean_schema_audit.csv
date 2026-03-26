@@ -1,8 +1,6 @@
 file,column,expected,actual,pass
 olist_customers_dataset.parquet,customer_id,string,string,True
 olist_customers_dataset.parquet,customer_unique_id,string,string,True
-olist_customers_dataset.parquet,customer_zip_code_prefix,string,string,True
-olist_geolocation_dataset.parquet,geolocation_zip_code_prefix,string,string,True
 olist_geolocation_dataset.parquet,geolocation_lat,float,float,True
 olist_geolocation_dataset.parquet,geolocation_lng,float,float,True
 olist_order_items_dataset.parquet,order_id,string,string,True
@@ -39,6 +37,5 @@ olist_products_dataset.parquet,product_length_cm,int,int,True
 olist_products_dataset.parquet,product_height_cm,int,int,True
 olist_products_dataset.parquet,product_width_cm,int,int,True
 olist_sellers_dataset.parquet,seller_id,string,string,True
-olist_sellers_dataset.parquet,seller_zip_code_prefix,string,string,True
 product_category_name_translation.parquet,product_category_name,string,string,True
 product_category_name_translation.parquet,product_category_name_english,string,string,True

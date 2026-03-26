@@ -1,10 +1,11 @@
 file,column,dtype,dtype_family,expected_family_heuristic,sample_values,null_count,null_pct,flagged,flag_reason
 olist_customers_dataset.parquet,customer_id,string,string,string,06b8999e2fba1a1fbc88172c00ba8bc7|18955e83d337fd6b2def6b18a428ac77|4e7b3e00288586ebd08712fdd0374a03,0,0.0,False,
 olist_customers_dataset.parquet,customer_unique_id,string,string,string,861eff4711a542e4b93843c6dd7febb0|290c77bc529b7ac935b93aa66c333dc3|060e732b5b29e8181a18229c7b0b2b5e,0,0.0,False,
-olist_customers_dataset.parquet,customer_zip_code_prefix,string,string,string,14409|9790|1151,0,0.0,False,
+olist_customers_dataset.parquet,customer_zip_code_prefix,string,string,string,14409|09790|01151,0,0.0,False,
 olist_customers_dataset.parquet,customer_city,string,string,,franca|sao bernardo do campo|sao paulo,0,0.0,False,
 olist_customers_dataset.parquet,customer_state,string,string,,SP|SP|SP,0,0.0,False,
-olist_geolocation_dataset.parquet,geolocation_zip_code_prefix,string,string,string,1037|1046|1046,0,0.0,False,
+olist_customers_dataset.parquet,customer_state_name,string,string,,São Paulo|São Paulo|São Paulo,0,0.0,False,
+olist_geolocation_dataset.parquet,geolocation_zip_code_prefix,string,string,string,01037|01046|01046,0,0.0,False,
 olist_geolocation_dataset.parquet,geolocation_lat,Float64,float,numeric,-23.54562128115268|-23.546081127035535|-23.54612896641469,0,0.0,False,
 olist_geolocation_dataset.parquet,geolocation_lng,Float64,float,numeric,-46.63929204800168|-46.64482029837157|-46.64295148361138,0,0.0,False,
 olist_geolocation_dataset.parquet,geolocation_city,string,string,,sao paulo|sao paulo|sao paulo,0,0.0,False,
