@@ -52,17 +52,28 @@ This project demonstrates:
 
 ---
 
-## Exploratory Visualization: Revenue by Brazilian State
+## Visualizations
 
-One exploratory view created using Tableau to validate the cleaned data output:
+### Exploratory Analysis: Revenue by Brazilian State
+
+Early Tableau choropleth map created to validate the cleaned dataset:
 
 ![Revenue by Brazilian State](assets/images/sales-revenue-by-brazilian-state.png)
 
-- Choropleth map showing total revenue concentration across states (darker shades = higher revenue).
-- São Paulo dominates, consistent with Olist's customer distribution.
-- Built using aggregated revenue (SUM(price)) and customer state from the cleaned dataset.
+- Shows total revenue concentration across Brazilian states (darker shades = higher revenue).
+- Highlights strong market dominance by São Paulo.
+- Built using aggregated `price` and `customer_state` from the cleaned data.
 
-Future interactive dashboard development will use Looker Studio.
+### 2017 Revenue & Sales Dashboard
+
+Polished interactive dashboard summarizing key findings from the 2017 Olist dataset:
+
+![2017 Brazilian E-commerce Revenue & Sales Dashboard](assets/images/2017-brazilian-ecom-revenue-dash.png)
+
+- KPIs: Total Revenue, Unique Customers, Total Orders
+- Monthly order trend with seasonality insights
+- State-level revenue distribution and top performers
+- Key insights and actionable business recommendations
 
 ---
 
@@ -224,12 +235,12 @@ Run individual modules:
 ```bash
 uv run python -m ecom_pipeline.pipeline.sanity_check_raw
 uv run python -m ecom_pipeline.pipeline.profile_raw
-uv run python -m ecom_pipeline.pipeline.generate_data_dictionary
 uv run python -m ecom_pipeline.pipeline.standardize_columns
 uv run python -m ecom_pipeline.pipeline.enforce_schema
 uv run python -m ecom_pipeline.pipeline.validate_clean_schema
 uv run python -m ecom_pipeline.pipeline.audit_all_clean_dtypes
 uv run python -m ecom_pipeline.pipeline.validate_schema_contract
+uv run python -m ecom_pipeline.pipeline.generate_data_dictionary
 ```
 
 ---
@@ -272,6 +283,9 @@ Applies explicit casting rules (including strict `datetime64[ns]` handling) to p
 The pipeline now features significantly improved schema enforcement and type handling:
 
 ### Key Improvements in This Update
+
+- **Brazilian CEP (zip code) prefixes**: All `*_zip_code_prefix` columns are now preserved as 5-digit strings with leading zeros (e.g. `01001` instead of `1001`). This ensures accurate joins with the geolocation table and correct location-based analysis.
+- **State names**: Added `customer_state_name` with full English names (e.g. "São Paulo", "Rio de Janeiro") to improve compatibility with Looker Studio Filled maps and make visualizations more readable.
 - **Explicit nullable types**: Integer columns are now consistently cast to `Int64`, floats to `Float64`, and strings to the modern nullable `string` dtype.
 - Prevents pandas from silently converting integer columns to `float64` when missing values (NaNs) are present.
 - **Strict `datetime64[ns]` handling** for all timestamp columns to ensure correct `TIMESTAMP` / `DATETIME` types in BigQuery (fixed Parquet logical type metadata issue).
