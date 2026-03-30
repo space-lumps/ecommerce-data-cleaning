@@ -13,13 +13,13 @@ Run from repo root:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import raw_dir, repo_root
+from ecom_pipeline.utils.io import raw_dir
 
-# Anchor execution to repo root (independent of working directory)
-REPO_ROOT = repo_root()
-
+# Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.
+# They resolve to local machine paths and should never appear in generated
+# documentation.
 # Immutable input data
-RAW = raw_dir()
+_RAW = raw_dir()
 
 # Pipeline file validation
 FILES = [
@@ -37,14 +37,14 @@ FILES = [
 
 def main() -> None:
     # build a list of missing files in the repo
-    missing = [f for f in FILES if not (RAW / f).exists()]
+    missing = [f for f in FILES if not (_RAW / f).exists()]
     if missing:
         msg = "Missing files in data/raw:\n- " + "\n- ".join(missing)
         raise SystemExit(msg)
 
     for f in FILES:
         # load file into memory
-        path = RAW / f
+        path = _RAW / f
         try:
             df = pd.read_csv(path)
         except Exception as exc:

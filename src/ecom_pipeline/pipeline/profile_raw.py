@@ -22,15 +22,17 @@ Output:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import ensure_dir, raw_dir, repo_root, reports_dir
+from ecom_pipeline.utils.io import ensure_dir, raw_dir, reports_dir
 
 # -------------------------
 # Directory configuration
 # -------------------------
 
-REPO_ROOT = repo_root()
-RAW = raw_dir()
-OUT = reports_dir()
+# Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.
+# They resolve to local machine paths and should never appear in generated
+# documentation.
+_RAW = raw_dir()
+_OUT = reports_dir()
 
 
 # -------------------------
@@ -62,7 +64,7 @@ def profile_csv(filename: str) -> list[dict]:
     Returns:
         list of dict rows (one per column)
     """
-    path = RAW / filename
+    path = _RAW / filename
 
     try:
         df = pd.read_csv(path)
@@ -100,7 +102,7 @@ def main() -> None:
     """Profile all raw CSVs and write consolidated report."""
     all_rows = []
 
-    out_path = OUT / "raw_profile.csv"
+    out_path = _OUT / "raw_profile.csv"
     ensure_dir(out_path.parent)
 
     for f in FILES:

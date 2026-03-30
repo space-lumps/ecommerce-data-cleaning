@@ -17,15 +17,14 @@ import re
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import clean_dir, repo_root, reports_dir, write_csv
+from ecom_pipeline.utils.io import clean_dir, reports_dir, write_csv
 from ecom_pipeline.utils.logging import configure_logging, get_logger
 
 configure_logging()
 logger = get_logger(__name__)
 
-REPO_ROOT = repo_root()
-CLEAN = clean_dir()
-OUT = reports_dir()
+_CLEAN = clean_dir()
+_OUT = reports_dir()
 
 ID_RE = re.compile(r".*_id$|.*zip.*|.*postal.*", re.IGNORECASE)
 DT_RE = re.compile(
@@ -65,9 +64,9 @@ def sample_non_null(df: pd.DataFrame, col: str, n: int = 3) -> str:
 
 
 def main() -> None:
-    files = sorted(CLEAN.glob("*.parquet"))
+    files = sorted(_CLEAN.glob("*.parquet"))
     if not files:
-        raise SystemExit(f"No clean parquet files found in {CLEAN}")
+        raise SystemExit(f"No clean parquet files found in {_CLEAN}")
 
     full_rows = []
     flag_rows = []
@@ -131,8 +130,8 @@ def main() -> None:
             if flag:
                 flag_rows.append(row)
 
-    full_path = OUT / "clean_dtypes_full.csv"
-    flags_path = OUT / "clean_dtypes_flags.csv"
+    full_path = _OUT / "clean_dtypes_full.csv"
+    flags_path = _OUT / "clean_dtypes_flags.csv"
 
     columns = [
         "file",

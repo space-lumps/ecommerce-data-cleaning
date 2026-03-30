@@ -26,7 +26,6 @@ from ecom_pipeline.utils.io import (
     clean_dir,
     interim_dir,
     read_parquet,
-    repo_root,
     write_parquet,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
@@ -34,9 +33,8 @@ from ecom_pipeline.utils.logging import configure_logging, get_logger
 configure_logging()
 logger = get_logger(__name__)
 
-REPO_ROOT = repo_root()
-INTERIM = interim_dir()
-CLEAN = clean_dir()
+_INTERIM = interim_dir()
+_CLEAN = clean_dir()
 
 FILES = [
     "olist_orders_dataset.parquet",
@@ -178,8 +176,8 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> None:
     for filename in FILES:
-        in_path = INTERIM / filename
-        out_path = CLEAN / filename
+        in_path = _INTERIM / filename
+        out_path = _CLEAN / filename
 
         logger.info("Processing %s", filename)
 

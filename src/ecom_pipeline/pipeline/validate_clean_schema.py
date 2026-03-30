@@ -30,8 +30,8 @@ from ecom_pipeline.utils.logging import configure_logging, get_logger
 configure_logging()
 logger = get_logger(__name__)
 
-CLEAN = clean_dir()
-OUT = reports_dir()
+_CLEAN = clean_dir()
+_OUT = reports_dir()
 
 
 def get_dtype_family(dtype) -> str:
@@ -63,7 +63,7 @@ def main() -> None:
     rows: list[dict[str, Any]] = []
 
     for filename, contract in SCHEMA_CONTRACT.items():
-        path = CLEAN / filename
+        path = _CLEAN / filename
 
         if not path.exists():
             logger.error("Missing clean file: %s", path)
@@ -112,7 +112,7 @@ def main() -> None:
 
     # Write audit report
     audit_df = pd.DataFrame(rows)
-    out_path = OUT / "clean_schema_audit.csv"
+    out_path = _OUT / "clean_schema_audit.csv"
     write_csv(audit_df, out_path)
 
     fails = sum(1 for r in rows if r.get("pass") is False)
