@@ -43,7 +43,7 @@ This project demonstrates modern data engineering and analytics practices:
 
 Early Tableau choropleth map created to validate the cleaned dataset:
 
-<p align="center">
+<p align="left">
   <img src="assets/images/sales-revenue-by-brazilian-state.png" alt="Tableau Map - Revenue by Brazilian State" width="55%">
 </p>
 
@@ -79,8 +79,6 @@ uv pip install -e .
 cp data/samples/*.csv data/raw/
 uv run python run_pipeline.py
 ```
-
----
 
 ## Dataset Setup
 
@@ -175,8 +173,22 @@ These changes eliminate common import failures and produce cleaner, more reliabl
 ### Outputs
 - `data/clean/*.parquet` – production-ready files with correct nullable types
 - `docs/data_dictionary.md` – living, accurate documentation of the final schema
+- `reports/clean_contract_audit.csv` – comprehensive contract validation (required columns, dtypes, constraints, FKs)
+- `reports/clean_schema_audit.csv` – lightweight type and nullability validation
 - `reports/clean_dtypes_full.csv` – detailed audit with null counts/percentages
-- `reports/clean_schema_audit.csv` – pass/fail validation of expected types
+- `reports/clean_dtypes_flags.csv` – flagged suspicious columns for manual review
+
+### Schema Contract
+
+A declarative schema contract (`src/ecom_pipeline/config/schema_contract.py`) defines the expected structure of every cleaned dataset and serves as the **single source of truth** for type enforcement.
+
+It specifies:
+- Required columns and primary keys
+- Logical data types (`string`, `numeric`, `datetime`)
+- Nullable rules and domain constraints (including `numeric_type`: `Int64` or `Float64`)
+- Foreign key relationships (for future validation)
+
+This contract is enforced by `enforce_schema.py` during cleaning and validated by the audit modules, ensuring consistency and preventing schema drift.
 
 ---
 

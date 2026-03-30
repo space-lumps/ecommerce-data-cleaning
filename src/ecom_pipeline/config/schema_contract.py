@@ -74,13 +74,41 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "product_id": {"dtype_family": "string", "nullable": False},
             # category is nullable in raw; do not force imputation
             "product_category_name": {"dtype_family": "string", "nullable": True},
-            "product_name_length": {"dtype_family": "numeric", "nullable": True},
-            "product_description_length": {"dtype_family": "numeric", "nullable": True},
-            "product_photos_qty": {"dtype_family": "numeric", "nullable": True},
-            "product_weight_g": {"dtype_family": "numeric", "nullable": True},
-            "product_length_cm": {"dtype_family": "numeric", "nullable": True},
-            "product_height_cm": {"dtype_family": "numeric", "nullable": True},
-            "product_width_cm": {"dtype_family": "numeric", "nullable": True},
+            "product_name_length": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_description_length": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_photos_qty": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_weight_g": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_length_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_height_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_width_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
         },
     },
     "product_category_name_translation.parquet": {
@@ -109,8 +137,16 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 "dtype_family": "string",
                 "nullable": False,
             },
-            "geolocation_lat": {"dtype_family": "numeric", "nullable": False},
-            "geolocation_lng": {"dtype_family": "numeric", "nullable": False},
+            "geolocation_lat": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+            },
+            "geolocation_lng": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+            },
             "geolocation_city": {"dtype_family": "string", "nullable": False},
             "geolocation_state": {"dtype_family": "string", "nullable": False},
         },
@@ -184,12 +220,26 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         ],
         "columns": {
             "order_id": {"dtype_family": "string", "nullable": False},
-            "order_item_id": {"dtype_family": "numeric", "nullable": False},
+            "order_item_id": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": False,
+            },
             "product_id": {"dtype_family": "string", "nullable": False},
             "seller_id": {"dtype_family": "string", "nullable": False},
             "shipping_limit_date": {"dtype_family": "datetime", "nullable": False},
-            "price": {"dtype_family": "numeric", "nullable": False, "min": 0},
-            "freight_value": {"dtype_family": "numeric", "nullable": False, "min": 0},
+            "price": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
+            "freight_value": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
         },
         "foreign_keys": [
             {
@@ -220,14 +270,24 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         ],
         "columns": {
             "order_id": {"dtype_family": "string", "nullable": False},
-            "payment_sequential": {"dtype_family": "numeric", "nullable": False},
+            "payment_sequential": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": False,
+            },
             "payment_type": {"dtype_family": "string", "nullable": False},
             "payment_installments": {
                 "dtype_family": "numeric",
+                "numeric_type": "Int64",
                 "nullable": False,
                 "min": 0,
             },
-            "payment_value": {"dtype_family": "numeric", "nullable": False, "min": 0},
+            "payment_value": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
         },
         "foreign_keys": [
             {
@@ -253,6 +313,7 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "order_id": {"dtype_family": "string", "nullable": False},
             "review_score": {
                 "dtype_family": "numeric",
+                "numeric_type": "Int64",
                 "nullable": False,
                 "min": 1,
                 "max": 5,
