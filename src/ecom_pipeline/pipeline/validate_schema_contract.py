@@ -3,7 +3,7 @@ Validate clean parquet tables against SCHEMA_CONTRACT.
 
 Checks (fail-fast via nonzero fail count):
 - required columns exist
-- dtype_family matches (str/numeric/datetime)
+- dtype_family matches (string / numeric / datetime)
 - non-null constraints
 - primary key uniqueness (if defined)
 - foreign key integrity (if defined)
@@ -26,7 +26,6 @@ from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
 from ecom_pipeline.utils.io import (
     clean_dir,
     read_parquet,
-    repo_root,
     reports_dir,
     write_csv,
 )
@@ -35,30 +34,31 @@ from ecom_pipeline.utils.logging import configure_logging, get_logger
 configure_logging()
 logger = get_logger(__name__)
 
-REPO_ROOT = repo_root()
-CLEAN = clean_dir()
-OUT = reports_dir()
+# Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.
+# They resolve to local machine paths and should never appear in generated
+# documentation.
+_CLEAN = clean_dir()
+_OUT = reports_dir()
 
 
 def dtype_family(series: pd.Series) -> str:
     """
     Map pandas dtype to a logical family.
 
-    Notes:
-    - 'str' accepts pandas string dtype and object dtype
-      (object is common when reading parquet/csv).
+    Returns:
+        "string", "numeric", or "datetime" to match schema_contract.py
     """
     if is_datetime64_any_dtype(series.dtype):
         return "datetime"
     if is_numeric_dtype(series.dtype):
         return "numeric"
     if is_string_dtype(series.dtype) or is_object_dtype(series.dtype):
-        return "str"
+        return "string"
     return str(series.dtype)
 
 
 def load_clean_table(filename: str) -> pd.DataFrame:
-    path = CLEAN / filename
+    path = _CLEAN / filename
     if not path.exists():
         raise FileNotFoundError(f"Missing clean file: {path}")
     return read_parquet(path)
@@ -366,7 +366,7 @@ def main() -> None:
                     }
                 )
 
-    out_path = OUT / "clean_contract_audit.csv"
+    out_path = _OUT / "clean_contract_audit.csv"
     write_csv(pd.DataFrame(rows), out_path)
     logger.info("Wrote %s (fails=%s)", out_path, fails)
 
