@@ -1,15 +1,21 @@
 """
-Validate clean parquet tables against SCHEMA_CONTRACT.
+Full schema contract validator for cleaned Olist tables.
+
+This is the comprehensive validator that enforces the full SCHEMA_CONTRACT.
 
 Checks (fail-fast via nonzero fail count):
-- required columns exist
+- Required columns exist
 - dtype_family matches (string / numeric / datetime)
-- non-null constraints
-- primary key uniqueness (if defined)
-- foreign key integrity (if defined)
+- Non-null constraints for columns marked nullable=False
+- Primary key uniqueness (if defined)
+- Foreign key integrity (if defined)
 
 Output:
 - reports/clean_contract_audit.csv
+
+Note:
+This script performs deeper validation than validate_clean_schema.py.
+It is intended for final checks and CI.
 """
 
 from __future__ import annotations
@@ -34,19 +40,15 @@ from ecom_pipeline.utils.logging import configure_logging, get_logger
 configure_logging()
 logger = get_logger(__name__)
 
-# Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.
-# They resolve to local machine paths and should never appear in generated
-# documentation.
+# Runtime-only helpers (prefixed with _ so they are hidden from pdoc)
 _CLEAN = clean_dir()
 _OUT = reports_dir()
 
 
-def dtype_family(series: pd.Series) -> str:
-    """
-    Map pandas dtype to a logical family.
+def get_dtype_family(series: pd.Series) -> str:
+    """Map pandas dtype to logical family defined in SCHEMA_CONTRACT.
 
-    Returns:
-        "string", "numeric", or "datetime" to match schema_contract.py
+    Returns exactly 'string', 'numeric', or 'datetime'.
     """
     if is_datetime64_any_dtype(series.dtype):
         return "datetime"
@@ -54,10 +56,11 @@ def dtype_family(series: pd.Series) -> str:
         return "numeric"
     if is_string_dtype(series.dtype) or is_object_dtype(series.dtype):
         return "string"
-    return str(series.dtype)
+    return str(series.dtype).lower()
 
 
 def load_clean_table(filename: str) -> pd.DataFrame:
+    """Load a clean parquet file. Raises FileNotFoundError if missing."""
     path = _CLEAN / filename
     if not path.exists():
         raise FileNotFoundError(f"Missing clean file: {path}")
@@ -68,7 +71,7 @@ def main() -> None:
     rows: list[dict] = []
     fails = 0
 
-    # Cache referenced tables for FK checks
+    # Cache tables for foreign key checks to avoid repeated reads
     table_cache: dict[str, pd.DataFrame] = {}
 
     def get_table(table_name: str) -> pd.DataFrame:
@@ -77,9 +80,9 @@ def main() -> None:
         return table_cache[table_name]
 
     for table_name, spec in SCHEMA_CONTRACT.items():
-        logger.info("Contract validating %s", table_name)
+        logger.info("Running full contract validation for %s", table_name)
 
-        # ---- load table ----
+        # ---- Load table ----
         try:
             df = get_table(table_name)
         except Exception as exc:
@@ -94,7 +97,7 @@ def main() -> None:
             )
             continue
 
-        # ---- required columns ----
+        # ---- Required columns ----
         required_cols = spec.get("required_columns", [])
         missing_required = [c for c in required_cols if c not in df.columns]
         if missing_required:
@@ -107,7 +110,6 @@ def main() -> None:
                     "details": f"missing={missing_required}",
                 }
             )
-            # still continue checks for existing columns
         else:
             rows.append(
                 {
@@ -118,18 +120,18 @@ def main() -> None:
                 }
             )
 
-        # ---- per-column checks ----
+        # ---- Per-column checks ----
         columns_spec = spec.get("columns", {})
 
         for col, col_spec in columns_spec.items():
             if col not in df.columns:
-                # already captured by required_columns if required
                 continue
 
             ser = df[col]
             expected_family = col_spec.get("dtype_family")
-            actual_family = dtype_family(ser)
+            actual_family = get_dtype_family(ser)
 
+            # dtype check
             if expected_family and actual_family != expected_family:
                 fails += 1
                 rows.append(
@@ -138,11 +140,9 @@ def main() -> None:
                         "check": "dtype_family",
                         "column": col,
                         "status": "fail",
-                        "details": (
-                            f"expected={expected_family} "
-                            f"actual={actual_family} "
-                            f"pandas_dtype={ser.dtype}"
-                        ),
+                        "details": f"expected={expected_family} "
+                        "actual={actual_family} "
+                        "pandas_dtype={ser.dtype}",
                     }
                 )
             else:
@@ -152,15 +152,13 @@ def main() -> None:
                         "check": "dtype_family",
                         "column": col,
                         "status": "pass",
-                        "details": (
-                            f"expected={expected_family} actual={actual_family}"
-                        ),
+                        "details": f"expected={expected_family} actual={actual_family}",
                     }
                 )
 
-            # nullability
+            # nullability check
             nullable = col_spec.get("nullable", True)
-            if nullable is False:
+            if not nullable:
                 null_count = int(ser.isna().sum())
                 if null_count > 0:
                     fails += 1
@@ -184,11 +182,10 @@ def main() -> None:
                         }
                     )
 
-            # allowed values (for low-cardinality categorical columns)
+            # allowed values check
             allowed_values = col_spec.get("allowed_values")
             if allowed_values is not None:
-                bad = ser.dropna()
-                bad = bad[~bad.isin(allowed_values)]
+                bad = ser.dropna()[~ser.dropna().isin(allowed_values)]
                 bad_count = len(bad)
                 if bad_count > 0:
                     sample = "|".join(bad.astype(str).head(5).tolist())
@@ -213,40 +210,32 @@ def main() -> None:
                         }
                     )
 
-            # min/max (numeric)
+            # min/max checks for numeric columns
             if expected_family == "numeric":
-                if "min" in col_spec:
-                    min_val = col_spec["min"]
-                    bad = ser.dropna() < min_val
-                    bad_count = int(bad.sum())
-                    if bad_count > 0:
-                        fails += 1
-                        rows.append(
-                            {
-                                "table": table_name,
-                                "check": "min_value",
-                                "column": col,
-                                "status": "fail",
-                                "details": f"min={min_val} bad_count={bad_count}",
-                            }
-                        )
-                if "max" in col_spec:
-                    max_val = col_spec["max"]
-                    bad = ser.dropna() > max_val
-                    bad_count = int(bad.sum())
-                    if bad_count > 0:
-                        fails += 1
-                        rows.append(
-                            {
-                                "table": table_name,
-                                "check": "max_value",
-                                "column": col,
-                                "status": "fail",
-                                "details": f"max={max_val} bad_count={bad_count}",
-                            }
-                        )
+                for bound in ["min", "max"]:
+                    if bound in col_spec:
+                        bound_val = col_spec[bound]
+                        ser_non_null = ser.dropna()
+                        if bound == "min":
+                            bad = ser_non_null < bound_val
+                        else:
+                            bad = ser_non_null > bound_val
+                        bad_count = int(bad.sum())
+                        if bad_count > 0:
+                            fails += 1
+                            rows.append(
+                                {
+                                    "table": table_name,
+                                    "check": f"{bound}_value",
+                                    "column": col,
+                                    "status": "fail",
+                                    "details": (
+                                        f"{bound}={bound_val} bad_count={bad_count}"
+                                    ),
+                                }
+                            )
 
-        # ---- primary key uniqueness ----
+        # ---- Primary key uniqueness ----
         pk = spec.get("primary_key")
         if pk:
             if any(c not in df.columns for c in pk):
@@ -281,7 +270,7 @@ def main() -> None:
                         }
                     )
 
-        # ---- foreign key checks ----
+        # ---- Foreign key integrity ----
         fks = spec.get("foreign_keys", [])
         for fk in fks:
             from_cols = fk["from_columns"]
@@ -326,7 +315,7 @@ def main() -> None:
                 )
                 continue
 
-            # Check orphans: non-null FK values not present in target PK columns
+            # Orphan check
             left = df[from_cols].dropna().drop_duplicates()
             right = df_to[to_cols].dropna().drop_duplicates()
 
@@ -348,12 +337,8 @@ def main() -> None:
                         "table": table_name,
                         "check": "foreign_key_integrity",
                         "status": "fail",
-                        "details": (
-                            f"from_cols={from_cols} "
-                            f"to_table={to_table} "
-                            f"orphan_count={orphan_count} "
-                            f"sample={sample}"
-                        ),
+                        "details": f"from_cols={from_cols} to_table={to_table} "
+                        "orphan_count={orphan_count} sample={sample}",
                     }
                 )
             else:
@@ -366,9 +351,11 @@ def main() -> None:
                     }
                 )
 
+    # Write final audit report
     out_path = _OUT / "clean_contract_audit.csv"
     write_csv(pd.DataFrame(rows), out_path)
-    logger.info("Wrote %s (fails=%s)", out_path, fails)
+
+    logger.info("Full contract validation complete → %s (fails=%s)", out_path, fails)
 
     if fails > 0:
         raise SystemExit(

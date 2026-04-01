@@ -145,14 +145,12 @@ uv run python run_pipeline.py
 3. **Standardize Columns**
   Applies consistent column naming.
 4. **Enforce Schema**
-  Applies explicit casting rules (including strict `datetime64[ns]` and nullable dtypes) to produce clean Parquet outputs.
-5. **Validate Clean Schema**
-  Verifies data types match expectations.
+  Applies explicit type casting using SCHEMA_CONTRACT as the single source of truth.
 6. **Audit Dtypes**
-  Flags suspicious type patterns using heuristics.
+  Flags suspicious type patterns and generates detailed reports.
 7. **Validate Schema Contract**
-  Enforces required columns, primary key uniqueness, and logical dtype guarantees.
-8. **Generate Data Dictionary**  
+  Comprehensive validation (required columns, dtypes, nullability, PK uniqueness, FK integrity, domain constraints)
+8. **Generate Data Dictionary**
   Generates `docs/data_dictionary.md` from `reports/clean_dtypes_full.csv`.
 
 ---
@@ -162,10 +160,10 @@ uv run python run_pipeline.py
 This branch significantly strengthened type safety and Parquet reliability for BigQuery:
 
 **Key Improvements**
-- Brazilian CEP (`*_zip_code_prefix`) columns preserved as 5-digit strings with leading zeros for accurate geolocation joins
-- Added full English state names (`customer_state_name`) to improve geographic matching in Tableau and Looker Studio (prevents incorrect worldwide matches)
-- Enforced modern nullable dtypes (`Int64`, `Float64`, `string`)
-- Strict `datetime64[ns]` handling to ensure correct `TIMESTAMP` types in BigQuery
+- All type casting is now driven by SCHEMA_CONTRACT (no more duplicate CAST_RULES)
+- Strict nullable dtypes (string, Int64, Float64, datetime64[ns]) to ensure correct types in Bigquery
+- Brazilian CEP zip codes preserved with leading zeros
+- Full English state names added for better visualization support
 - Improved `dtype_family` logic and data dictionary generation based on cleaned data
 
 These changes eliminate common import failures and produce cleaner, more reliable outputs for analysis and visualization.
@@ -174,7 +172,6 @@ These changes eliminate common import failures and produce cleaner, more reliabl
 - `data/clean/*.parquet` – production-ready files with correct nullable types
 - `docs/data_dictionary.md` – living, accurate documentation of the final schema
 - `reports/clean_contract_audit.csv` – comprehensive contract validation (required columns, dtypes, constraints, FKs)
-- `reports/clean_schema_audit.csv` – lightweight type and nullability validation
 - `reports/clean_dtypes_full.csv` – detailed audit with null counts/percentages
 - `reports/clean_dtypes_flags.csv` – flagged suspicious columns for manual review
 
@@ -186,9 +183,9 @@ It specifies:
 - Required columns and primary keys
 - Logical data types (`string`, `numeric`, `datetime`)
 - Nullable rules and domain constraints (including `numeric_type`: `Int64` or `Float64`)
-- Foreign key relationships (for future validation)
+- Foreign key relationships
 
-This contract is enforced by `enforce_schema.py` during cleaning and validated by the audit modules, ensuring consistency and preventing schema drift.
+This contract is enforced by enforce_schema.py and validated by validate_schema_contract.py, ensuring consistency and preventing schema drift.
 
 ---
 

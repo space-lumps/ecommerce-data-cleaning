@@ -57,9 +57,8 @@ RENAME_MAP = {
 def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
     """Apply schema enforcement using SCHEMA_CONTRACT as the single source of truth.
 
-    - string   → pandas nullable 'string'
-    - datetime → datetime64[ns]
-    - numeric  → Int64 or Float64 based on 'numeric_type' in contract
+    All type casting is driven by the contract. Special business rules (like derived
+    columns) are applied after basic casting to ensure consistent nullable dtypes.
     """
     contract = SCHEMA_CONTRACT.get(filename, {})
     df = df.copy()
@@ -75,12 +74,12 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
         f"{initial_nulls:,}",
     )
 
-    # Apply legacy rename (needed for products table column typos)
+    # Apply legacy rename (needed for products table)
     if filename == "olist_products_dataset.parquet":
         df = df.rename(columns=RENAME_MAP)
 
     # ------------------------------------------------------------------
-    # Type casting driven by SCHEMA_CONTRACT
+    # Main type casting from SCHEMA_CONTRACT
     # ------------------------------------------------------------------
     for col, spec in contract.get("columns", {}).items():
         if col not in df.columns:
@@ -100,20 +99,18 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
             if numeric_type is None:
                 raise ValueError(
                     f"Column '{col}' in {filename} is numeric "
-                    "but missing 'numeric_type' in SCHEMA_CONTRACT. "
+                    "but missing 'numeric_type' in SCHEMA_CONTRACT."
                     "Must be 'Int64' or 'Float64'."
                 )
 
             if numeric_type == "Float64":
                 df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
             else:
-                # For Int64: first convert to float (safe), then to Int64
-                # This avoids the "cannot safely cast float64 to int64" error
                 df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
                 df[col] = df[col].astype("Int64")
 
     # ------------------------------------------------------------------
-    # Special business rules (not pure type casting)
+    # Special business rules (derived columns)
     # ------------------------------------------------------------------
     # Brazilian zip codes: preserve leading zeros
     zip_cols = [col for col in df.columns if "zip_code_prefix" in col.lower()]
@@ -122,7 +119,7 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].astype("string").str.zfill(5)
             logger.info("Applied zfill(5) to zip column: %s", col)
 
-    # Derived column: full Brazilian state names for better BI visualizations
+    # Derived column: full Brazilian state names (created as string)
     if filename == "olist_customers_dataset.parquet" and "customer_state" in df.columns:
         state_name_map = {
             "SP": "São Paulo",
@@ -154,7 +151,10 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
             "RR": "Roraima",
         }
         df["customer_state_name"] = (
-            df["customer_state"].map(state_name_map).fillna(df["customer_state"])
+            df["customer_state"]
+            .map(state_name_map)
+            .fillna(df["customer_state"])
+            .astype("string")  # Ensure consistent nullable string dtype
         )
         logger.info("Added derived column: customer_state_name")
 
