@@ -27,8 +27,8 @@ STEPS = [
     ("profile_raw", profile_raw),
     ("standardize_columns", standardize_columns),
     ("enforce_schema", enforce_schema),
-    ("validate_schema_contract", validate_schema_contract),  # Full contract validation
     ("audit_all_clean_dtypes", audit_all_clean_dtypes),
+    ("validate_schema_contract", validate_schema_contract),  # Full contract validation
     ("generate_data_dictionary", generate_data_dictionary),
 ]
 

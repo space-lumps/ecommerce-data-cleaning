@@ -146,11 +146,11 @@ uv run python run_pipeline.py
   Applies consistent column naming.
 4. **Enforce Schema**
   Applies explicit type casting using SCHEMA_CONTRACT as the single source of truth.
-6. **Audit Dtypes**
+5. **Audit Dtypes**
   Flags suspicious type patterns and generates detailed reports.
-7. **Validate Schema Contract**
+6. **Validate Schema Contract**
   Comprehensive validation (required columns, dtypes, nullability, PK uniqueness, FK integrity, domain constraints)
-8. **Generate Data Dictionary**
+7. **Generate Data Dictionary**
   Generates `docs/data_dictionary.md` from `reports/clean_dtypes_full.csv`.
 
 ---
@@ -159,14 +159,14 @@ uv run python run_pipeline.py
 
 This pipeline features strong type safety and relational integrity for BigQuery compatibility:
 
-Key Improvements
+### Key Improvements
 
 - All type casting is driven by `SCHEMA_CONTRACT` as the single source of truth
 - Strict nullable dtypes (`string`, `Int64`, `Float64`, `datetime64[ns]`)
 - Brazilian CEP zip codes preserved with leading zeros
 - Full English state names added for better visualization support
 - Cross-table foreign key integrity checks with orphan detection
-- Automatic enrichment of product_category_name_translation table with missing categories from products (e.g. `pc_gamer`, `portateis_cozinha_e_preparadores_de_alimentos`)
+- Automatic enrichment of `product_category_name_translation` table with missing categories from `olist_products_dataset` (e.g. `pc_gamer`, `portateis_cozinha_e_preparadores_de_alimentos`)
 
 These changes eliminate common import failures and produce cleaner, more reliable outputs for analysis and visualization.
 
@@ -179,7 +179,7 @@ These changes eliminate common import failures and produce cleaner, more reliabl
 
 ### Schema Contract
 
-A declarative schema contract (`src/ecom_pipeline/config/schema_contract.py`) defines the expected structure of every cleaned dataset and serves as the **single source of truth** for type enforcement.
+A declarative schema contract defines the expected structure of every cleaned dataset and serves as the **single source of truth** for type enforcement.
 
 It specifies:
 - Required columns and primary keys
@@ -187,7 +187,7 @@ It specifies:
 - Nullable rules and domain constraints (including `numeric_type`: `Int64` or `Float64`)
 - Foreign key relationships (fully enforced with cross-table referential integrity checks)
 
-This contract is enforced by `enforce_schema.py` and validated by `validate_schema_contract.py`, ensuring consistency and preventing schema drift.
+The contract is enforced in `enforce_schema.py` and rigorously validated by `validate_schema_contract.py`.
 
 ---
 
