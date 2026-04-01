@@ -157,21 +157,23 @@ uv run python run_pipeline.py
 
 ## Validation & Schema Enforcement
 
-This branch significantly strengthened type safety and Parquet reliability for BigQuery:
+This pipeline features strong type safety and relational integrity for BigQuery compatibility:
 
-**Key Improvements**
-- All type casting is now driven by SCHEMA_CONTRACT (no more duplicate CAST_RULES)
-- Strict nullable dtypes (string, Int64, Float64, datetime64[ns]) to ensure correct types in Bigquery
+Key Improvements
+
+- All type casting is driven by `SCHEMA_CONTRACT` as the single source of truth
+- Strict nullable dtypes (`string`, `Int64`, `Float64`, `datetime64[ns]`)
 - Brazilian CEP zip codes preserved with leading zeros
 - Full English state names added for better visualization support
-- Improved `dtype_family` logic and data dictionary generation based on cleaned data
+- Cross-table foreign key integrity checks with orphan detection
+- Automatic enrichment of product_category_name_translation table with missing categories from products (e.g. `pc_gamer`, `portateis_cozinha_e_preparadores_de_alimentos`)
 
 These changes eliminate common import failures and produce cleaner, more reliable outputs for analysis and visualization.
 
 ### Outputs
 - `data/clean/*.parquet` – production-ready files with correct nullable types
 - `docs/data_dictionary.md` – living, accurate documentation of the final schema
-- `reports/clean_contract_audit.csv` – comprehensive contract validation (required columns, dtypes, constraints, FKs)
+- `reports/clean_contract_audit.csv` – comprehensive contract validation (required columns, dtypes, constraints, FK integrity)
 - `reports/clean_dtypes_full.csv` – detailed audit with null counts/percentages
 - `reports/clean_dtypes_flags.csv` – flagged suspicious columns for manual review
 
@@ -183,34 +185,32 @@ It specifies:
 - Required columns and primary keys
 - Logical data types (`string`, `numeric`, `datetime`)
 - Nullable rules and domain constraints (including `numeric_type`: `Int64` or `Float64`)
-- Foreign key relationships
+- Foreign key relationships (fully enforced with cross-table referential integrity checks)
 
-This contract is enforced by enforce_schema.py and validated by validate_schema_contract.py, ensuring consistency and preventing schema drift.
+This contract is enforced by `enforce_schema.py` and validated by `validate_schema_contract.py`, ensuring consistency and preventing schema drift.
 
 ---
 
 ## Skills & Key Learnings
 
 - Modular Python package with proper `src/` layout for maintainability
-- Strict schema enforcement and deterministic type casting for reliable Parquet outputs
-- Defensive validation (`validate_schema_contract.py`) + CI testing
+- Strict schema enforcement + deterministic type casting
+- Cross-table foreign key validation with automatic data enrichment
+- Defensive validation + CI testing
 - Reproducible environments with `uv`
 - Production-ready data pipeline powering a Looker Studio dashboard
 
 **Key Learnings**
 - Explicit type casting early prevents BigQuery import failures and silent data issues
-- Testing at every stage (automated CI + manual post-ingestion checks in BigQuery) is critical
-- Clear schema contracts save significant debugging time in production workflows
+- Handling real-world data quirks (incomplete lookup tables) is critical for clean relational pipelines
+- Clear schema contracts + validation save significant debugging time
 
 ---
 
 ## Future Improvements
 
-- Add foreign key integrity validation (cross-table checks – partially implemented)
-- Add domain/value constraints (e.g., non-negative price, valid order_status domain)
-- Optional: Add test coverage reporting to CI (pytest-cov)
-- Optional: Containerize with Dockerfile
-- Explore dlt for declarative orchestration (in a separate branch)
+- Expand domain-specific validation rules (e.g. price ≥ 0, valid order_status values)
+- Increase test coverage for edge cases
 
 ---
 

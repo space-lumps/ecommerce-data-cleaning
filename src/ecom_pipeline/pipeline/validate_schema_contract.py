@@ -1,21 +1,15 @@
 """
 Full schema contract validator for cleaned Olist tables.
 
-This is the comprehensive validator that enforces the full SCHEMA_CONTRACT.
-
-Checks (fail-fast via nonzero fail count):
-- Required columns exist
-- dtype_family matches (string / numeric / datetime)
+It performs the following checks (fails fast on any failure):
+- Required columns are present
+- dtype_family matches the contract (string / numeric / datetime)
 - Non-null constraints for columns marked nullable=False
 - Primary key uniqueness (if defined)
-- Foreign key integrity (if defined)
+- Cross-table foreign key integrity (orphan detection)
 
 Output:
-- reports/clean_contract_audit.csv
-
-Note:
-This script performs deeper validation than validate_clean_schema.py.
-It is intended for final checks and CI.
+- reports/clean_contract_audit.csv (detailed per-check results)
 """
 
 from __future__ import annotations
@@ -338,7 +332,7 @@ def main() -> None:
                         "check": "foreign_key_integrity",
                         "status": "fail",
                         "details": f"from_cols={from_cols} to_table={to_table} "
-                        "orphan_count={orphan_count} sample={sample}",
+                        f"orphan_count={orphan_count} sample={sample}",
                     }
                 )
             else:

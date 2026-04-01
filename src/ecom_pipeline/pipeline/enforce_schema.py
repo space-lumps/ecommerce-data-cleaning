@@ -1,20 +1,18 @@
 """
-Enforce a minimal, analytics-friendly schema on interim Olist tables.
+Apply schema enforcement and data quality fixes to produce clean Olist tables.
 
 Input:
-- data/interim/*.parquet (column names already standardized)
+- data/interim/*.parquet (standardized column names)
 
 Output:
-- data/clean/*.parquet (types normalized for joins/analytics)
+- data/clean/*.parquet (strongly typed and analytics-ready)
 
-Changes applied:
-- integer_cols → Int64 (nullable integer)
-- float_cols   → Float64 (nullable float)
-- string_cols  → string (nullable string)
-- datetime_cols → datetime64[ns] (nullable datetime)
-- Prevents pandas from silently converting integer columns to float
-  when NaNs are present
-- Ensures correct INT64 types when loaded into BigQuery and Looker Studio
+Responsibilities:
+- Enforces all types, nullability, and constraints from SCHEMA_CONTRACT
+- Prevents pandas from silently converting integers to float when NaNs exist
+- Applies business rules (zip code padding, full state names)
+- Enriches the category translation table to fix foreign key integrity
+- Ensures consistent, BigQuery-friendly Parquet output
 """
 
 import time
@@ -54,12 +52,50 @@ RENAME_MAP = {
 }
 
 
-def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
-    """Apply schema enforcement using SCHEMA_CONTRACT as the single source of truth.
+def enrich_category_translation(
+    products_df: pd.DataFrame, translation_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Add missing Portuguese categories from products into the translation table."""
+    prod_cats = products_df["product_category_name"].dropna().unique()
+    trans_cats = translation_df["product_category_name"].unique()
 
-    All type casting is driven by the contract. Special business rules (like derived
-    columns) are applied after basic casting to ensure consistent nullable dtypes.
-    """
+    missing_cats = [cat for cat in prod_cats if cat not in trans_cats]
+
+    if not missing_cats:
+        logger.info("✅ No missing product categories found.")
+        return translation_df
+
+    logger.info(
+        f"Found {len(missing_cats)} missing categories. Enriching translation table..."
+    )
+
+    manual_mappings = {
+        "pc_gamer": "pc_gamer",
+        "portateis_cozinha_e_preparadores_de_alimentos": (
+            "kitchen_portables_and_food_preparators"
+        ),
+    }
+
+    new_rows = []
+    for cat in missing_cats:
+        english = manual_mappings.get(cat, cat.replace("_", " ").title())
+        new_rows.append(
+            {
+                "product_category_name": cat,
+                "product_category_name_english": english,
+            }
+        )
+
+    if new_rows:
+        new_df = pd.DataFrame(new_rows)
+        translation_df = pd.concat([translation_df, new_df], ignore_index=True)
+        logger.info(f"Added {len(new_rows)} new category translations.")
+
+    return translation_df
+
+
+def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
+    """Apply schema enforcement using SCHEMA_CONTRACT as the single source of truth."""
     contract = SCHEMA_CONTRACT.get(filename, {})
     df = df.copy()
 
@@ -96,13 +132,6 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
 
         elif dtype_family == "numeric":
             numeric_type = spec.get("numeric_type")
-            if numeric_type is None:
-                raise ValueError(
-                    f"Column '{col}' in {filename} is numeric "
-                    "but missing 'numeric_type' in SCHEMA_CONTRACT."
-                    "Must be 'Int64' or 'Float64'."
-                )
-
             if numeric_type == "Float64":
                 df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
             else:
@@ -175,18 +204,33 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> None:
+    processed_dfs = {}  # Cache cleaned DataFrames in memory
+
     for filename in FILES:
         in_path = _INTERIM / filename
-        out_path = _CLEAN / filename
-
-        logger.info("Processing %s", filename)
-
         df = read_parquet(in_path)
 
         df = enforce_schema(filename, df)
 
+        # Special handling: enrich translation using the *cleaned* products table
+        if filename == "product_category_name_translation.parquet":
+            if "olist_products_dataset.parquet" in processed_dfs:
+                products_clean = processed_dfs["olist_products_dataset.parquet"]
+                df = enrich_category_translation(products_clean, df)
+            else:
+                logger.warning(
+                    "Cleaned products table not found in cache. Skipping enrichment."
+                )
+
+        # Save to clean/
+        out_path = _CLEAN / filename
         write_parquet(df, out_path)
         logger.info("Wrote %s", out_path)
+
+        # Cache the cleaned df for later use (especially for translation)
+        processed_dfs[filename] = df
+
+    logger.info("Schema enforcement completed for all tables.")
 
 
 if __name__ == "__main__":

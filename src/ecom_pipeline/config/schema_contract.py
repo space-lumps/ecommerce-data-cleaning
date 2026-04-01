@@ -36,11 +36,11 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         "columns": {
             "customer_id": {"dtype_family": "string", "nullable": False},
             "customer_unique_id": {"dtype_family": "string", "nullable": False},
-            # keep as string to preserve leading zeros & avoid numeric coercion
             "customer_zip_code_prefix": {"dtype_family": "string", "nullable": False},
             "customer_city": {"dtype_family": "string", "nullable": False},
             "customer_state": {"dtype_family": "string", "nullable": False},
         },
+        # No outgoing FKs (root table)
     },
     "olist_sellers_dataset.parquet": {
         "primary_key": ["seller_id"],
@@ -56,6 +56,7 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "seller_city": {"dtype_family": "string", "nullable": False},
             "seller_state": {"dtype_family": "string", "nullable": False},
         },
+        # No outgoing FKs
     },
     "olist_products_dataset.parquet": {
         "primary_key": ["product_id"],
@@ -72,7 +73,6 @@ SCHEMA_CONTRACT: dict[str, dict] = {
         ],
         "columns": {
             "product_id": {"dtype_family": "string", "nullable": False},
-            # category is nullable in raw; do not force imputation
             "product_category_name": {"dtype_family": "string", "nullable": True},
             "product_name_length": {
                 "dtype_family": "numeric",
@@ -110,6 +110,13 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 "nullable": True,
             },
         },
+        "foreign_keys": [
+            {
+                "from_columns": ["product_category_name"],
+                "to_table": "product_category_name_translation.parquet",
+                "to_columns": ["product_category_name"],
+            }
+        ],
     },
     "product_category_name_translation.parquet": {
         "primary_key": ["product_category_name"],
@@ -121,6 +128,14 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 "nullable": False,
             },
         },
+        # No outgoing FKs
+        "foreign_keys": [
+            {
+                "from_columns": ["product_category_name"],
+                "to_table": "olist_products_dataset.parquet",
+                "to_columns": ["product_category_name"],
+            }
+        ],
     },
     "olist_geolocation_dataset.parquet": {
         # geolocation is not strictly keyed; many rows per zip
@@ -150,6 +165,7 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "geolocation_city": {"dtype_family": "string", "nullable": False},
             "geolocation_state": {"dtype_family": "string", "nullable": False},
         },
+        # No strict FKs (it's a many-to-one reference table)
     },
     # -----------------------------
     # Fact tables
@@ -184,7 +200,6 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 ],
             },
             "order_purchase_timestamp": {"dtype_family": "datetime", "nullable": False},
-            # meaningful nulls: some orders may not have approval or delivery timestamps
             "order_approved_at": {"dtype_family": "datetime", "nullable": True},
             "order_delivered_carrier_date": {
                 "dtype_family": "datetime",
@@ -318,7 +333,6 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 "min": 1,
                 "max": 5,
             },
-            # nullable is expected in the source dataset
             "review_comment_title": {"dtype_family": "string", "nullable": True},
             "review_comment_message": {"dtype_family": "string", "nullable": True},
             "review_creation_date": {"dtype_family": "datetime", "nullable": False},
