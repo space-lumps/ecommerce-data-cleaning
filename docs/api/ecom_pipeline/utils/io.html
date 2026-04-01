@@ -82,137 +82,327 @@
                         <div class="docstring"><p>Shared file I/O utilities for the data pipeline.</p>
 </div>
 
-                
-                
-                
+                        <input id="mod-io-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-io-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Shared file I/O utilities for the data pipeline.</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="k">def</span><span class="w"> </span><span class="nf">repo_root</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="k">def</span><span class="w"> </span><span class="nf">raw_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_RAW_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;raw&quot;</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="k">def</span><span class="w"> </span><span class="nf">interim_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_INTERIM_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;interim&quot;</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_CLEAN_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;clean&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="c1"># samples directory is used for development purposes only</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="k">def</span><span class="w"> </span><span class="nf">samples_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_SAMPLES_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;samples&quot;</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="k">def</span><span class="w"> </span><span class="nf">reports_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_REPORTS_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;reports&quot;</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="k">def</span><span class="w"> </span><span class="nf">docs_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_DOCS_DIR&quot;</span><span class="p">)</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;docs&quot;</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a><span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>    <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a><span class="k">def</span><span class="w"> </span><span class="nf">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_parquet</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a><span class="sd">    Write DataFrame to Parquet file with settings optimized for BigQuery compatibility.</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a>
+</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a><span class="sd">    Key parameters:</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a><span class="sd">    - engine=&#39;pyarrow&#39;: Most reliable for timestamp handling</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos">72</span></a><span class="sd">    - compression=&#39;snappy&#39;: Good balance of speed and size</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos">73</span></a><span class="sd">    - use_deprecated_int96_timestamps=True: Critical fix for BigQuery to correctly</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos">74</span></a><span class="sd">      recognize datetime64[ns] columns as TIMESTAMP instead of INT64.</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos">75</span></a>
+</span><span id="L-76"><a href="#L-76"><span class="linenos">76</span></a><span class="sd">    This addresses a common pandas/pyarrow → BigQuery interoperability issue</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos">77</span></a><span class="sd">    where timestamps lose their logical type metadata.</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos">78</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos">79</span></a>    <span class="n">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos">80</span></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos">81</span></a>        <span class="n">path</span><span class="p">,</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos">82</span></a>        <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;pyarrow&quot;</span><span class="p">,</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos">83</span></a>        <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;snappy&quot;</span><span class="p">,</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos">84</span></a>        <span class="n">use_deprecated_int96_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># fix BigQuery timestamp parsing issue</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos">85</span></a>    <span class="p">)</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos">86</span></a>
+</span><span id="L-87"><a href="#L-87"><span class="linenos">87</span></a>
+</span><span id="L-88"><a href="#L-88"><span class="linenos">88</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_csv</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos">89</span></a>    <span class="n">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos">90</span></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></pre></div>
+
+
             </section>
                 <section id="repo_root">
-                    <div class="attr function">
+                            <input id="repo_root-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">repo_root</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="repo_root-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#repo_root"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="repo_root-12"><a href="#repo_root-12"><span class="linenos">12</span></a><span class="k">def</span><span class="w"> </span><span class="nf">repo_root</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="repo_root-13"><a href="#repo_root-13"><span class="linenos">13</span></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="raw_dir">
-                    <div class="attr function">
+                            <input id="raw_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">raw_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="raw_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#raw_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="raw_dir-16"><a href="#raw_dir-16"><span class="linenos">16</span></a><span class="k">def</span><span class="w"> </span><span class="nf">raw_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="raw_dir-17"><a href="#raw_dir-17"><span class="linenos">17</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_RAW_DIR&quot;</span><span class="p">)</span>
+</span><span id="raw_dir-18"><a href="#raw_dir-18"><span class="linenos">18</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="raw_dir-19"><a href="#raw_dir-19"><span class="linenos">19</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="raw_dir-20"><a href="#raw_dir-20"><span class="linenos">20</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;raw&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="interim_dir">
-                    <div class="attr function">
+                            <input id="interim_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">interim_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="interim_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#interim_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="interim_dir-23"><a href="#interim_dir-23"><span class="linenos">23</span></a><span class="k">def</span><span class="w"> </span><span class="nf">interim_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="interim_dir-24"><a href="#interim_dir-24"><span class="linenos">24</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_INTERIM_DIR&quot;</span><span class="p">)</span>
+</span><span id="interim_dir-25"><a href="#interim_dir-25"><span class="linenos">25</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="interim_dir-26"><a href="#interim_dir-26"><span class="linenos">26</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="interim_dir-27"><a href="#interim_dir-27"><span class="linenos">27</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;interim&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="clean_dir">
-                    <div class="attr function">
+                            <input id="clean_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">clean_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="clean_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#clean_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="clean_dir-30"><a href="#clean_dir-30"><span class="linenos">30</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="clean_dir-31"><a href="#clean_dir-31"><span class="linenos">31</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_CLEAN_DIR&quot;</span><span class="p">)</span>
+</span><span id="clean_dir-32"><a href="#clean_dir-32"><span class="linenos">32</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="clean_dir-33"><a href="#clean_dir-33"><span class="linenos">33</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="clean_dir-34"><a href="#clean_dir-34"><span class="linenos">34</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;clean&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="samples_dir">
-                    <div class="attr function">
+                            <input id="samples_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">samples_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="samples_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#samples_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="samples_dir-38"><a href="#samples_dir-38"><span class="linenos">38</span></a><span class="k">def</span><span class="w"> </span><span class="nf">samples_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="samples_dir-39"><a href="#samples_dir-39"><span class="linenos">39</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_SAMPLES_DIR&quot;</span><span class="p">)</span>
+</span><span id="samples_dir-40"><a href="#samples_dir-40"><span class="linenos">40</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="samples_dir-41"><a href="#samples_dir-41"><span class="linenos">41</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="samples_dir-42"><a href="#samples_dir-42"><span class="linenos">42</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;samples&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="reports_dir">
-                    <div class="attr function">
+                            <input id="reports_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">reports_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="reports_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#reports_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="reports_dir-45"><a href="#reports_dir-45"><span class="linenos">45</span></a><span class="k">def</span><span class="w"> </span><span class="nf">reports_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="reports_dir-46"><a href="#reports_dir-46"><span class="linenos">46</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_REPORTS_DIR&quot;</span><span class="p">)</span>
+</span><span id="reports_dir-47"><a href="#reports_dir-47"><span class="linenos">47</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="reports_dir-48"><a href="#reports_dir-48"><span class="linenos">48</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="reports_dir-49"><a href="#reports_dir-49"><span class="linenos">49</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;reports&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="docs_dir">
-                    <div class="attr function">
+                            <input id="docs_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">docs_dir</span><span class="signature pdoc-code condensed">(<span class="return-annotation">) -> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>:</span></span>
 
-        
+                <label class="view-source-button" for="docs_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#docs_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="docs_dir-52"><a href="#docs_dir-52"><span class="linenos">52</span></a><span class="k">def</span><span class="w"> </span><span class="nf">docs_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+</span><span id="docs_dir-53"><a href="#docs_dir-53"><span class="linenos">53</span></a>    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ECOM_DOCS_DIR&quot;</span><span class="p">)</span>
+</span><span id="docs_dir-54"><a href="#docs_dir-54"><span class="linenos">54</span></a>    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+</span><span id="docs_dir-55"><a href="#docs_dir-55"><span class="linenos">55</span></a>        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+</span><span id="docs_dir-56"><a href="#docs_dir-56"><span class="linenos">56</span></a>    <span class="k">return</span> <span class="n">repo_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;docs&quot;</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="ensure_dir">
-                    <div class="attr function">
+                            <input id="ensure_dir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">ensure_dir</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">path</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
-        
+                <label class="view-source-button" for="ensure_dir-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#ensure_dir"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ensure_dir-59"><a href="#ensure_dir-59"><span class="linenos">59</span></a><span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="ensure_dir-60"><a href="#ensure_dir-60"><span class="linenos">60</span></a>    <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="read_parquet">
-                    <div class="attr function">
+                            <input id="read_parquet-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">read_parquet</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">path</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span></span><span class="return-annotation">) -> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span>:</span></span>
 
-        
+                <label class="view-source-button" for="read_parquet-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#read_parquet"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="read_parquet-63"><a href="#read_parquet-63"><span class="linenos">63</span></a><span class="k">def</span><span class="w"> </span><span class="nf">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="read_parquet-64"><a href="#read_parquet-64"><span class="linenos">64</span></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span></pre></div>
+
+
     
 
                 </section>
                 <section id="write_parquet">
-                    <div class="attr function">
+                            <input id="write_parquet-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">write_parquet</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
-        
+                <label class="view-source-button" for="write_parquet-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#write_parquet"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_parquet-67"><a href="#write_parquet-67"><span class="linenos">67</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_parquet</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="write_parquet-68"><a href="#write_parquet-68"><span class="linenos">68</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="write_parquet-69"><a href="#write_parquet-69"><span class="linenos">69</span></a><span class="sd">    Write DataFrame to Parquet file with settings optimized for BigQuery compatibility.</span>
+</span><span id="write_parquet-70"><a href="#write_parquet-70"><span class="linenos">70</span></a>
+</span><span id="write_parquet-71"><a href="#write_parquet-71"><span class="linenos">71</span></a><span class="sd">    Key parameters:</span>
+</span><span id="write_parquet-72"><a href="#write_parquet-72"><span class="linenos">72</span></a><span class="sd">    - engine=&#39;pyarrow&#39;: Most reliable for timestamp handling</span>
+</span><span id="write_parquet-73"><a href="#write_parquet-73"><span class="linenos">73</span></a><span class="sd">    - compression=&#39;snappy&#39;: Good balance of speed and size</span>
+</span><span id="write_parquet-74"><a href="#write_parquet-74"><span class="linenos">74</span></a><span class="sd">    - use_deprecated_int96_timestamps=True: Critical fix for BigQuery to correctly</span>
+</span><span id="write_parquet-75"><a href="#write_parquet-75"><span class="linenos">75</span></a><span class="sd">      recognize datetime64[ns] columns as TIMESTAMP instead of INT64.</span>
+</span><span id="write_parquet-76"><a href="#write_parquet-76"><span class="linenos">76</span></a>
+</span><span id="write_parquet-77"><a href="#write_parquet-77"><span class="linenos">77</span></a><span class="sd">    This addresses a common pandas/pyarrow → BigQuery interoperability issue</span>
+</span><span id="write_parquet-78"><a href="#write_parquet-78"><span class="linenos">78</span></a><span class="sd">    where timestamps lose their logical type metadata.</span>
+</span><span id="write_parquet-79"><a href="#write_parquet-79"><span class="linenos">79</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="write_parquet-80"><a href="#write_parquet-80"><span class="linenos">80</span></a>    <span class="n">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+</span><span id="write_parquet-81"><a href="#write_parquet-81"><span class="linenos">81</span></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+</span><span id="write_parquet-82"><a href="#write_parquet-82"><span class="linenos">82</span></a>        <span class="n">path</span><span class="p">,</span>
+</span><span id="write_parquet-83"><a href="#write_parquet-83"><span class="linenos">83</span></a>        <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;pyarrow&quot;</span><span class="p">,</span>
+</span><span id="write_parquet-84"><a href="#write_parquet-84"><span class="linenos">84</span></a>        <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;snappy&quot;</span><span class="p">,</span>
+</span><span id="write_parquet-85"><a href="#write_parquet-85"><span class="linenos">85</span></a>        <span class="n">use_deprecated_int96_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># fix BigQuery timestamp parsing issue</span>
+</span><span id="write_parquet-86"><a href="#write_parquet-86"><span class="linenos">86</span></a>    <span class="p">)</span>
+</span></pre></div>
+
+
             <div class="docstring"><p>Write DataFrame to Parquet file with settings optimized for BigQuery compatibility.</p>
 
 <p>Key parameters:</p>
@@ -231,15 +421,22 @@ where timestamps lose their logical type metadata.</p>
 
                 </section>
                 <section id="write_csv">
-                    <div class="attr function">
+                            <input id="write_csv-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
             
         <span class="def">def</span>
         <span class="name">write_csv</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">df</span><span class="p">:</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
 
-        
+                <label class="view-source-button" for="write_csv-view-source"><span>View Source</span></label>
+
     </div>
     <a class="headerlink" href="#write_csv"></a>
-    
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_csv-89"><a href="#write_csv-89"><span class="linenos">89</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_csv</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="write_csv-90"><a href="#write_csv-90"><span class="linenos">90</span></a>    <span class="n">ensure_dir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+</span><span id="write_csv-91"><a href="#write_csv-91"><span class="linenos">91</span></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></pre></div>
+
+
     
 
                 </section>
