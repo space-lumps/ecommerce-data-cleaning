@@ -9,203 +9,122 @@
 ## Table of Contents
 
 - [Objective](#objective)
+- [Visualizations](#visualizations)
 - [Setup](#setup)
+- [Dataset Setup](#dataset-setup)
 - [Project Structure](#project-structure)
 - [Pipeline](#pipeline)
-- [Skills Demonstrated](#skills-demonstrated)
-- [Challenges and Insights](#challenges-and-learnings)
+- [Validation & Schema Enforcement](#validation--schema-enforcement)
+- [Skills & Key Learnings](#skills--key-learnings)
+- [Future Improvements](#future-improvements)
 - [API Documentation](#api-documentation)
 - [License](#license)
 
-## Quick Start
-
-```bash
-git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
-cd ecommerce-data-cleaning
-
-# Create & activate virtual environment (recommended: uv)
-uv venv
-source .venv/bin/activate   # or .venv\Scripts\activate on Windows
-
-# Install dependencies + editable package
-uv pip install -e .
-
-# Copy sample data (no Kaggle needed)
-cp data/samples/*.csv data/raw/
-
-# Run the full pipeline
-uv run python run_pipeline.py
-```
-
 ## Objective
 
-Build a reproducible, production-style data cleaning and validation pipeline for the Olist e-commerce dataset.
+Build a reproducible, production-style data cleaning, validation, and ingestion pipeline for the Olist Brazilian e-commerce dataset. Raw CSVs are transformed into clean, schema-enforced Parquet files optimized for BigQuery and downstream analytics.
 
-This project demonstrates:
+**Key enhancement (merged from `feature/improve-schema-enforcement` branch):**  
+Strengthened deterministic type casting and explicit schema enforcement during Parquet serialization. This gives full control over column types and eliminates common BigQuery import errors caused by weak/ambiguous typing (e.g., `object` → `STRING` coercion failures).
 
-- Structured modular pipeline design
-- Explicit schema enforcement
-- Data type auditing and validation
-- Reproducible execution using `uv`
-- Clean `src/` package architecture
-- Module-based execution (`python -m`)
+The resulting Parquet files now power reliable analysis and an interactive **Looker Studio dashboard** showing key revenue and order metrics across Brazilian states and product categories.
+
+This project demonstrates modern data engineering and analytics practices:
+- Modular `src/` package layout
+- Explicit schema contracts and validation
+- Automated CI testing + post-ingestion verification
+- Reproducible environments via `uv`
 
 ---
 
-## Exploratory Visualization: Revenue by Brazilian State
+## Visualizations
 
-One exploratory view created using Tableau to validate the cleaned data output:
+### Exploratory Analysis: Revenue by Brazilian State
 
-![Revenue by Brazilian State](assets/images/sales-revenue-by-brazilian-state.png)
+Early Tableau choropleth map created to validate the cleaned dataset:
 
-- Choropleth map showing total revenue concentration across states (darker shades = higher revenue).
-- São Paulo dominates, consistent with Olist's customer distribution.
-- Built using aggregated revenue (SUM(price)) and customer state from the cleaned dataset.
+<p align="left">
+  <img src="assets/images/sales-revenue-by-brazilian-state.png" alt="Tableau Map - Revenue by Brazilian State" width="55%">
+</p>
 
-Future interactive dashboard development will use Looker Studio.
+- Shows revenue concentration across states (darker = higher revenue)
+- Highlights strong market dominance by São Paulo.
+- Built from aggregated `price` and `customer_state`
+
+### 2017 Revenue & Sales Dashboard
+
+Polished interactive dashboard summarizing key findings from the 2017 Olist dataset:
+
+![2017 Brazilian E-commerce Revenue & Sales Dashboard](assets/images/2017-brazilian-ecom-revenue-dash.png)
+
+- KPIs: Total Revenue, Unique Customers, Total Orders
+- Monthly order trend with seasonality insights
+- State-level revenue distribution and top performers
+- Key insights and actionable business recommendations
 
 ---
 
 ## Setup
 
-### Clone the repository
-
 ```bash
 git clone https://github.com/space-lumps/ecommerce-data-cleaning.git
 cd ecommerce-data-cleaning
-```
 
----
+uv venv
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
+
+uv pip install -e .
+
+# Use sample data (no Kaggle needed)
+cp data/samples/*.csv data/raw/
+uv run python run_pipeline.py
+```
 
 ## Dataset Setup
 
 The pipeline can run using either the included sample dataset or the full Kaggle dataset.
 
-### Option A — Use included sample dataset (no Kaggle required)
+### Option A — Sample Data (recommended for quick start, no Kaggle needed)
 
-1. Copy sample CSVs into `data/raw/`:
+Copy the included samples and run the pipeline:
 
 ```bash
 cp data/samples/*.csv data/raw/
-```
-Ensure `data/raw/` contains only one dataset version (either samples or full Kaggle data).
-
-Run the pipeline:
-
-```bash
 uv run python run_pipeline.py
 ```
 
 ### Option B - Download full dataset from Kaggle
 
-Expected location:
+Download from [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) and place all `.csv` files in `data/raw/`.
 
-```text
-data/raw/
-```
-
-### Manual Download
-
-1. Download the dataset from Kaggle: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-2. Extract the CSV files.
-3. Move all `.csv` files into: `data/raw/`
-
-### Kaggle CLI (recommended)
-
-Install Kaggle CLI:
+Using Kaggle CLI (fastest):
 
 ```bash
 pip install kaggle
-```
-
-Place `kaggle.json` in `~/.kaggle/`, then run:
-
-```bash
 kaggle datasets download -d olistbr/brazilian-ecommerce -p data/raw --unzip
 ```
 
----
-
-### Data Directories
-
-```
-data/raw/       # Original source files
-data/interim/   # Optional intermediate artifacts
-data/clean/     # Cleaned parquet outputs
-data/samples/   # Static lightweight dataset (no Kaggle required)
-```
+Ensure `data/raw/` contains only one version of the data at a time.
 
 ---
 
 ## Project Structure
 
-```
+```text
 ecommerce-data-cleaning/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── data/
-│   ├── clean/
-│   ├── interim/
-│   ├── raw/
-│   └── samples/
-│       └── [sample CSV files]     # e.g., olist_orders_dataset.csv (truncated for brevity)
-├── docs/
-│   ├── api/
-│   │   └── [generated API docs]   # e.g., index.html (via pdoc)
-│   ├── data_dictionary.md
-│   ├── schema_contract.md
-│   └── validation_strategy.md
-├── reports/
-│   └── [generated reports]        # e.g., raw_profile.csv (generated at runtime)
-├── src/
-│   └── ecom_pipeline/
-│       ├── __init__.py
-│       ├── config/
-│       │   ├── __init__.py
-│       │   └── schema_contract.py
-│       ├── pipeline/
-│       │   ├── __init__.py
-│       │   ├── audit_all_clean_dtypes.py
-│       │   ├── enforce_schema.py
-│       │   ├── generate_data_dictionary.py
-│       │   ├── profile_raw.py
-│       │   ├── sanity_check_raw.py
-│       │   ├── standardize_columns.py
-│       │   ├── validate_clean_schema.py
-│       │   └── validate_schema_contract.py
-│       └── utils/
-│           ├── __init__.py
-│           ├── io.py
-│           └── logging.py
-├── tests/
-│   ├── test_io.py                 # smoke tests for io utils
-│   └── test_pipeline_e2e.py       # end-to-end pipeline smoke test
-├── .pre-commit-config.yaml
-├── .gitignore
-├── .ruff.toml
-├── LICENSE
-├── README.md
-├── pyproject.toml
-├── requirements-lock.txt
-├── requirements.txt
-├── run_pipeline.py
-└── uv.lock
+├── src/ecom_pipeline/          # All reusable code (installable package)
+├── data/samples/               # Lightweight test data (included)
+├── docs/                       # schema_contract.md, data_dictionary.md, etc.
+├── reports/                    # Generated audits and profiles
+├── tests/                      # E2E and IO smoke tests
+├── .github/workflows/ci.yml
+├── pyproject.toml + uv.lock    # Reproducible environment
+└── run_pipeline.py
 ```
+
 The project follows a proper `src/` layout.  
 All reusable code lives inside the `ecom_pipeline` package.
 Tests live in a top-level `tests/` directory.
-
----
-
-## Dependency Files
-
-- `pyproject.toml` — Defines the installable package and dependencies.
-- `uv.lock` — Locked dependency graph for reproducible environments (used by `uv`).
-- `requirements.txt` — Traditional dependency list (optional compatibility).
-- `requirements-lock.txt` — Pinned dependency versions (optional compatibility).
-
-For this project, `uv` + `pyproject.toml` + `uv.lock` are the authoritative installation method.
 
 ---
 
@@ -213,26 +132,9 @@ For this project, `uv` + `pyproject.toml` + `uv.lock` are the authoritative inst
 
 ### Execution
 
-Run the full pipeline:
-
 ```bash
 uv run python run_pipeline.py
 ```
-
-Run individual modules:
-
-```bash
-uv run python -m ecom_pipeline.pipeline.sanity_check_raw
-uv run python -m ecom_pipeline.pipeline.profile_raw
-uv run python -m ecom_pipeline.pipeline.generate_data_dictionary
-uv run python -m ecom_pipeline.pipeline.standardize_columns
-uv run python -m ecom_pipeline.pipeline.enforce_schema
-uv run python -m ecom_pipeline.pipeline.validate_clean_schema
-uv run python -m ecom_pipeline.pipeline.audit_all_clean_dtypes
-uv run python -m ecom_pipeline.pipeline.validate_schema_contract
-```
-
----
 
 ### Pipeline Stages
 
@@ -240,93 +142,75 @@ uv run python -m ecom_pipeline.pipeline.validate_schema_contract
   Confirms raw files exist and are readable.
 2. **Profile Raw**
   Profiles source datasets before transformation.
-3. **Generate Data Dictionary**  
-  Generates `docs/data_dictionary.md` from `reports/raw_profile.csv`.
-4. **Standardize Columns**
+3. **Standardize Columns**
   Applies consistent column naming.
-5. **Enforce Schema**
-  Applies explicit casting rules to produce clean parquet outputs.
-6. **Validate Clean Schema**
-  Verifies data types match expectations.
-7. **Audit Dtypes**
-  Flags suspicious type patterns using heuristics.
-8. **Validate Schema Contract**
-  Enforces required columns, primary key uniqueness, and logical dtype guarantees.
+4. **Enforce Schema**
+  Applies explicit type casting using SCHEMA_CONTRACT as the single source of truth.
+5. **Audit Dtypes**
+  Flags suspicious type patterns and generates detailed reports.
+6. **Validate Schema Contract**
+  Comprehensive validation (required columns, dtypes, nullability, PK uniqueness, FK integrity, domain constraints)
+7. **Generate Data Dictionary**
+  Generates `docs/data_dictionary.md` from `reports/clean_dtypes_full.csv`.
 
 ---
+
+## Validation & Schema Enforcement
+
+This pipeline features strong type safety and relational integrity for BigQuery compatibility:
+
+### Key Improvements
+
+- All type casting is driven by `SCHEMA_CONTRACT` as the single source of truth
+- Strict nullable dtypes (`string`, `Int64`, `Float64`, `datetime64[ns]`)
+- Brazilian CEP zip codes preserved with leading zeros
+- Full English state names added for better visualization support
+- Cross-table foreign key integrity checks with orphan detection
+- Automatic enrichment of `product_category_name_translation` table with missing categories from `olist_products_dataset` (e.g. `pc_gamer`, `portateis_cozinha_e_preparadores_de_alimentos`)
+
+These changes eliminate common import failures and produce cleaner, more reliable outputs for analysis and visualization.
 
 ### Outputs
+- `data/clean/*.parquet` – production-ready files with correct nullable types
+- `docs/data_dictionary.md` – living, accurate documentation of the final schema
+- `reports/clean_contract_audit.csv` – comprehensive contract validation (required columns, dtypes, constraints, FK integrity)
+- `reports/clean_dtypes_full.csv` – detailed audit with null counts/percentages
+- `reports/clean_dtypes_flags.csv` – flagged suspicious columns for manual review
 
-- `data/clean/*.parquet`
-- `docs/data_dictionary.md`
-- `reports/raw_profile.csv`
-- `reports/clean_schema_audit.csv`
-- `reports/clean_dtypes_full.csv`
-- `reports/clean_dtypes_flags.csv`
-- `reports/clean_contract_audit.csv`
+### Schema Contract
 
----
+A declarative schema contract defines the expected structure of every cleaned dataset and serves as the **single source of truth** for type enforcement.
 
-### Validation & Schema Enforcement
+It specifies:
+- Required columns and primary keys
+- Logical data types (`string`, `numeric`, `datetime`)
+- Nullable rules and domain constraints (including `numeric_type`: `Int64` or `Float64`)
+- Foreign key relationships (fully enforced with cross-table referential integrity checks)
 
-The pipeline enforces structural guarantees after cleaning.
-
-#### 1. Deterministic Type Casting
-
-- Implemented in `enforce_schema.py`
-- Ensures consistent logical dtypes (str, datetime, numeric)
-
-#### 2. Clean Schema Validation
-
-- Implemented in `validate_clean_schema.py`
-- Verifies expected dtype families after casting
-
-#### 3. Schema Contract Validation
-
-- Implemented in `validate_schema_contract.py`
-- Enforces:
-  - Required columns
-  - Primary key uniqueness
-  - Logical dtype expectations
-  - Structural dataset integrity
-
-If any contract rule fails, the dataset is considered invalid.
+The contract is enforced in `enforce_schema.py` and rigorously validated by `validate_schema_contract.py`.
 
 ---
 
-## Skills Demonstrated
+## Skills & Key Learnings
 
-- Python package architecture (`src/` layout)
-- Schema-driven data cleaning
-- Defensive data validation
-- Reproducible execution environments (`uv`)
-- Logging and structured reporting
-- Implemented E2E testing with pytest and CI via GitHub Actions for automated validation on samples
-- Clean project organization for portfolio use
+- Modular Python package with proper `src/` layout for maintainability
+- Strict schema enforcement + deterministic type casting
+- Cross-table foreign key validation with automatic data enrichment
+- Defensive validation + CI testing
+- Reproducible environments with `uv`
+- Production-ready data pipeline powering a Looker Studio dashboard
 
----
-
-## Challenges and Insights
-
-This project involved iterating on a real-world data cleaning pipeline, revealing several practical lessons in data engineering:
-
-- **Handling Inconsistent Data Types in Schema Validation**: Encountered nuances with Python/Pandas dtypes like "str" vs. "string" vs. "object"—e.g., CSV imports defaulting to "object" required explicit coercion in `enforce_schema.py` to match expected schemas, preventing downstream errors in analysis or ML workflows. This highlighted the importance of strict type enforcement early in pipelines.
-- **Balancing Reproducibility and Simplicity**: Setting up a virtual environment with `uv` for fast, locked dependencies was straightforward, but integrating environment variables (e.g., for data dirs) taught me about flexible config without hardcoding paths.
-- **Modular Design for Maintainability**: Structuring as a package with separate scripts for extraction, validation, and auditing improved testability, but required careful import management to avoid circular dependencies.
-- **Testing Real-World Data Quirks**: Sample CSVs had edge cases like missing values or inconsistent formats, reinforcing the need for audits and E2E tests to catch issues that unit tests might miss.
-- **Automation Trade-offs**: Implementing CI with GitHub Actions automated checks, but debugging workflow failures (e.g., env var mismatches) emphasized clear logging and isolation in tests.
-
-These experiences strengthened my approach to building robust, scalable data pipelines.
+**Key Learnings**
+- Explicit type casting early prevents BigQuery import failures and silent data issues
+- Handling real-world data quirks (incomplete lookup tables) is critical for clean relational pipelines
+- Clear schema contracts + validation save significant debugging time
 
 ---
 
 ## Future Improvements
 
-- Add foreign key integrity validation (cross-table checks – partially implemented)
-- Add domain/value constraints (e.g., non-negative price, valid order_status domain)
-- Optional: Add test coverage reporting to CI (pytest-cov)
-- Optional: Containerize with Dockerfile
-- Explore dlt for declarative orchestration (in a separate branch)
+- Expand domain-specific validation rules (e.g. price ≥ 0, valid order_status values)
+- Increase test coverage for edge cases
 
 ---
 

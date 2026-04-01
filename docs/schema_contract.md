@@ -2,20 +2,37 @@
 
 ## Purpose
 
-Define structural guarantees for cleaned datasets.
+The schema contract defines the structural guarantees for all cleaned Olist datasets produced by the pipeline.
 
-## Validations Enforced
-
+It serves as the **single source of truth** for:
 - Required columns
-- Primary key uniqueness
-- Expected dtype family (logical types)
-- Dataset-level structural integrity
+- Primary key constraints
+- Logical data types (`string`, `numeric`, `datetime`)
+- Nullable rules and domain constraints (e.g. allowed values, min/max)
+- Numeric type precision (`Int64` vs `Float64`)
 
 ## Why This Matters
 
-Prevents silent schema drift and ensures downstream analytics safety.
+- Prevents silent schema drift between pipeline runs
+- Makes downstream analytics, validation, and loading steps safer and more predictable
+- Serves as living documentation for anyone consuming the cleaned `.parquet` files
 
-## Relationship to CAST_RULES
+## Design Decisions
 
-- CAST_RULES: enforces type casting during cleaning
-- Schema Contract: validates final structural correctness
+- **dtype_family** uses logical types only (`string` / `numeric` / `datetime`)
+- Text columns use pandas nullable `string` dtype (supports `pd.NA`) instead of legacy `object`
+- Numeric columns explicitly declare `numeric_type` (`Int64` or `Float64`)
+- Some nulls are intentionally allowed (e.g. delivery timestamps on canceled orders)
+- Foreign key relationships are declared for future validation and lineage tracking
+
+## Relationship to Other Components
+
+- **Schema Contract**: Defines the expected structure
+- **enforce_schema.py**: Enforces the contract during cleaning (single source of truth)
+- **Validation modules**: Check that the output matches the contract
+
+## Usage
+
+The contract is defined in `src/ecom_pipeline/config/schema_contract.py` and is used by:
+- `enforce_schema.py` for type casting
+- Validation scripts for post-cleaning checks

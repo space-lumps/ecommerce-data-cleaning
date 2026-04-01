@@ -6,8 +6,16 @@ This is intentionally framework-agnostic:
 - can be reused later for dlt / DB loading
 
 Notes:
-- "dtype_family" is logical (str / datetime / numeric), not pandas dtype strings.
-- Some nulls are meaningful (e.g., delivery timestamps on canceled orders).
+- "dtype_family" defines logical types only: 'string', 'numeric', or 'datetime'.
+- It is NOT a direct pandas dtype string (we do not store 'StringDtype'
+  or 'Int64' here).
+- In practice we map:
+    - 'string'   → pandas nullable 'string' dtype (pd.StringDtype)
+    - 'numeric'  → pandas nullable numeric dtypes (Int64, Float64, etc.)
+    - 'datetime' → pandas 'datetime64[ns]'
+- We chose the pandas nullable 'string' dtype for all text columns because it
+  properly supports pd.NA (pandas' native missing value) instead of Python None
+  or numpy NaN, leading to more consistent behavior in cleaning and downstream use.
 """
 
 from __future__ import annotations
@@ -26,13 +34,13 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "customer_state",
         ],
         "columns": {
-            "customer_id": {"dtype_family": "str", "nullable": False},
-            "customer_unique_id": {"dtype_family": "str", "nullable": False},
-            # keep as str to preserve leading zeros & avoid accidental numeric coercion
-            "customer_zip_code_prefix": {"dtype_family": "str", "nullable": False},
-            "customer_city": {"dtype_family": "str", "nullable": False},
-            "customer_state": {"dtype_family": "str", "nullable": False},
+            "customer_id": {"dtype_family": "string", "nullable": False},
+            "customer_unique_id": {"dtype_family": "string", "nullable": False},
+            "customer_zip_code_prefix": {"dtype_family": "string", "nullable": False},
+            "customer_city": {"dtype_family": "string", "nullable": False},
+            "customer_state": {"dtype_family": "string", "nullable": False},
         },
+        # No outgoing FKs (root table)
     },
     "olist_sellers_dataset.parquet": {
         "primary_key": ["seller_id"],
@@ -43,11 +51,12 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "seller_state",
         ],
         "columns": {
-            "seller_id": {"dtype_family": "str", "nullable": False},
-            "seller_zip_code_prefix": {"dtype_family": "str", "nullable": False},
-            "seller_city": {"dtype_family": "str", "nullable": False},
-            "seller_state": {"dtype_family": "str", "nullable": False},
+            "seller_id": {"dtype_family": "string", "nullable": False},
+            "seller_zip_code_prefix": {"dtype_family": "string", "nullable": False},
+            "seller_city": {"dtype_family": "string", "nullable": False},
+            "seller_state": {"dtype_family": "string", "nullable": False},
         },
+        # No outgoing FKs
     },
     "olist_products_dataset.parquet": {
         "primary_key": ["product_id"],
@@ -63,25 +72,63 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "product_width_cm",
         ],
         "columns": {
-            "product_id": {"dtype_family": "str", "nullable": False},
-            # category is nullable in raw; do not force imputation
-            "product_category_name": {"dtype_family": "str", "nullable": True},
-            "product_name_length": {"dtype_family": "numeric", "nullable": True},
-            "product_description_length": {"dtype_family": "numeric", "nullable": True},
-            "product_photos_qty": {"dtype_family": "numeric", "nullable": True},
-            "product_weight_g": {"dtype_family": "numeric", "nullable": True},
-            "product_length_cm": {"dtype_family": "numeric", "nullable": True},
-            "product_height_cm": {"dtype_family": "numeric", "nullable": True},
-            "product_width_cm": {"dtype_family": "numeric", "nullable": True},
+            "product_id": {"dtype_family": "string", "nullable": False},
+            "product_category_name": {"dtype_family": "string", "nullable": True},
+            "product_name_length": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_description_length": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_photos_qty": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_weight_g": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_length_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_height_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
+            "product_width_cm": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": True,
+            },
         },
+        "foreign_keys": [
+            {
+                "from_columns": ["product_category_name"],
+                "to_table": "product_category_name_translation.parquet",
+                "to_columns": ["product_category_name"],
+            }
+        ],
     },
     "product_category_name_translation.parquet": {
         "primary_key": ["product_category_name"],
         "required_columns": ["product_category_name", "product_category_name_english"],
         "columns": {
-            "product_category_name": {"dtype_family": "str", "nullable": False},
-            "product_category_name_english": {"dtype_family": "str", "nullable": False},
+            "product_category_name": {"dtype_family": "string", "nullable": False},
+            "product_category_name_english": {
+                "dtype_family": "string",
+                "nullable": False,
+            },
         },
+        # No outgoing FKs
     },
     "olist_geolocation_dataset.parquet": {
         # geolocation is not strictly keyed; many rows per zip
@@ -94,12 +141,24 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "geolocation_state",
         ],
         "columns": {
-            "geolocation_zip_code_prefix": {"dtype_family": "str", "nullable": False},
-            "geolocation_lat": {"dtype_family": "numeric", "nullable": False},
-            "geolocation_lng": {"dtype_family": "numeric", "nullable": False},
-            "geolocation_city": {"dtype_family": "str", "nullable": False},
-            "geolocation_state": {"dtype_family": "str", "nullable": False},
+            "geolocation_zip_code_prefix": {
+                "dtype_family": "string",
+                "nullable": False,
+            },
+            "geolocation_lat": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+            },
+            "geolocation_lng": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+            },
+            "geolocation_city": {"dtype_family": "string", "nullable": False},
+            "geolocation_state": {"dtype_family": "string", "nullable": False},
         },
+        # No strict FKs (it's a many-to-one reference table)
     },
     # -----------------------------
     # Fact tables
@@ -117,10 +176,10 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "order_estimated_delivery_date",
         ],
         "columns": {
-            "order_id": {"dtype_family": "str", "nullable": False},
-            "customer_id": {"dtype_family": "str", "nullable": False},
+            "order_id": {"dtype_family": "string", "nullable": False},
+            "customer_id": {"dtype_family": "string", "nullable": False},
             "order_status": {
-                "dtype_family": "str",
+                "dtype_family": "string",
                 "nullable": False,
                 "allowed_values": [
                     "created",
@@ -134,7 +193,6 @@ SCHEMA_CONTRACT: dict[str, dict] = {
                 ],
             },
             "order_purchase_timestamp": {"dtype_family": "datetime", "nullable": False},
-            # meaningful nulls: some orders may not have approval or delivery timestamps
             "order_approved_at": {"dtype_family": "datetime", "nullable": True},
             "order_delivered_carrier_date": {
                 "dtype_family": "datetime",
@@ -169,13 +227,27 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "freight_value",
         ],
         "columns": {
-            "order_id": {"dtype_family": "str", "nullable": False},
-            "order_item_id": {"dtype_family": "numeric", "nullable": False},
-            "product_id": {"dtype_family": "str", "nullable": False},
-            "seller_id": {"dtype_family": "str", "nullable": False},
+            "order_id": {"dtype_family": "string", "nullable": False},
+            "order_item_id": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": False,
+            },
+            "product_id": {"dtype_family": "string", "nullable": False},
+            "seller_id": {"dtype_family": "string", "nullable": False},
             "shipping_limit_date": {"dtype_family": "datetime", "nullable": False},
-            "price": {"dtype_family": "numeric", "nullable": False, "min": 0},
-            "freight_value": {"dtype_family": "numeric", "nullable": False, "min": 0},
+            "price": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
+            "freight_value": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
         },
         "foreign_keys": [
             {
@@ -205,15 +277,25 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "payment_value",
         ],
         "columns": {
-            "order_id": {"dtype_family": "str", "nullable": False},
-            "payment_sequential": {"dtype_family": "numeric", "nullable": False},
-            "payment_type": {"dtype_family": "str", "nullable": False},
+            "order_id": {"dtype_family": "string", "nullable": False},
+            "payment_sequential": {
+                "dtype_family": "numeric",
+                "numeric_type": "Int64",
+                "nullable": False,
+            },
+            "payment_type": {"dtype_family": "string", "nullable": False},
             "payment_installments": {
                 "dtype_family": "numeric",
+                "numeric_type": "Int64",
                 "nullable": False,
                 "min": 0,
             },
-            "payment_value": {"dtype_family": "numeric", "nullable": False, "min": 0},
+            "payment_value": {
+                "dtype_family": "numeric",
+                "numeric_type": "Float64",
+                "nullable": False,
+                "min": 0,
+            },
         },
         "foreign_keys": [
             {
@@ -235,17 +317,17 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             "review_answer_timestamp",
         ],
         "columns": {
-            "review_id": {"dtype_family": "str", "nullable": False},
-            "order_id": {"dtype_family": "str", "nullable": False},
+            "review_id": {"dtype_family": "string", "nullable": False},
+            "order_id": {"dtype_family": "string", "nullable": False},
             "review_score": {
                 "dtype_family": "numeric",
+                "numeric_type": "Int64",
                 "nullable": False,
                 "min": 1,
                 "max": 5,
             },
-            # nullable is expected in the source dataset
-            "review_comment_title": {"dtype_family": "str", "nullable": True},
-            "review_comment_message": {"dtype_family": "str", "nullable": True},
+            "review_comment_title": {"dtype_family": "string", "nullable": True},
+            "review_comment_message": {"dtype_family": "string", "nullable": True},
             "review_creation_date": {"dtype_family": "datetime", "nullable": False},
             "review_answer_timestamp": {"dtype_family": "datetime", "nullable": False},
         },

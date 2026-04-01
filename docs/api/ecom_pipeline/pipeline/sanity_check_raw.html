@@ -31,12 +31,6 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
-                    <a class="variable" href="#REPO_ROOT">REPO_ROOT</a>
-            </li>
-            <li>
-                    <a class="variable" href="#RAW">RAW</a>
-            </li>
-            <li>
                     <a class="variable" href="#FILES">FILES</a>
             </li>
             <li>
@@ -92,13 +86,13 @@ It verifies:</p>
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">ecom_pipeline.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">raw_dir</span><span class="p">,</span> <span class="n">repo_root</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">ecom_pipeline.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">raw_dir</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="c1"># Anchor execution to repo root (independent of working directory)</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="n">REPO_ROOT</span> <span class="o">=</span> <span class="n">repo_root</span><span class="p">()</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="c1"># Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="c1"># They resolve to local machine paths and should never appear in generated</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="c1"># documentation.</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="c1"># Immutable input data</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="n">RAW</span> <span class="o">=</span> <span class="n">raw_dir</span><span class="p">()</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="n">_RAW</span> <span class="o">=</span> <span class="n">raw_dir</span><span class="p">()</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="c1"># Pipeline file validation</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="n">FILES</span> <span class="o">=</span> <span class="p">[</span>
@@ -116,14 +110,14 @@ It verifies:</p>
 </span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>    <span class="c1"># build a list of missing files in the repo</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">RAW</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">_RAW</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Missing files in data/raw:</span><span class="se">\n</span><span class="s2">- &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">- &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>
 </span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span><span class="p">:</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>        <span class="c1"># load file into memory</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>        <span class="n">path</span> <span class="o">=</span> <span class="n">RAW</span> <span class="o">/</span> <span class="n">f</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>        <span class="n">path</span> <span class="o">=</span> <span class="n">_RAW</span> <span class="o">/</span> <span class="n">f</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>        <span class="k">try</span><span class="p">:</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
@@ -143,30 +137,6 @@ It verifies:</p>
 
 
             </section>
-                <section id="REPO_ROOT">
-                    <div class="attr variable">
-            <span class="name">REPO_ROOT</span>        =
-<span class="default_value">PosixPath(&#39;/Users/corin/code/portfolio/upwork/ecommerce-data-cleaning&#39;)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#REPO_ROOT"></a>
-    
-    
-
-                </section>
-                <section id="RAW">
-                    <div class="attr variable">
-            <span class="name">RAW</span>        =
-<span class="default_value">PosixPath(&#39;/Users/corin/code/portfolio/upwork/ecommerce-data-cleaning/data/raw&#39;)</span>
-
-        
-    </div>
-    <a class="headerlink" href="#RAW"></a>
-    
-    
-
-                </section>
                 <section id="FILES">
                     <div class="attr variable">
             <span class="name">FILES</span>        =
@@ -193,14 +163,14 @@ It verifies:</p>
     <a class="headerlink" href="#main"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="main-39"><a href="#main-39"><span class="linenos">39</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="main-40"><a href="#main-40"><span class="linenos">40</span></a>    <span class="c1"># build a list of missing files in the repo</span>
-</span><span id="main-41"><a href="#main-41"><span class="linenos">41</span></a>    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">RAW</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
+</span><span id="main-41"><a href="#main-41"><span class="linenos">41</span></a>    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">_RAW</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
 </span><span id="main-42"><a href="#main-42"><span class="linenos">42</span></a>    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
 </span><span id="main-43"><a href="#main-43"><span class="linenos">43</span></a>        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Missing files in data/raw:</span><span class="se">\n</span><span class="s2">- &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">- &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
 </span><span id="main-44"><a href="#main-44"><span class="linenos">44</span></a>        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </span><span id="main-45"><a href="#main-45"><span class="linenos">45</span></a>
 </span><span id="main-46"><a href="#main-46"><span class="linenos">46</span></a>    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FILES</span><span class="p">:</span>
 </span><span id="main-47"><a href="#main-47"><span class="linenos">47</span></a>        <span class="c1"># load file into memory</span>
-</span><span id="main-48"><a href="#main-48"><span class="linenos">48</span></a>        <span class="n">path</span> <span class="o">=</span> <span class="n">RAW</span> <span class="o">/</span> <span class="n">f</span>
+</span><span id="main-48"><a href="#main-48"><span class="linenos">48</span></a>        <span class="n">path</span> <span class="o">=</span> <span class="n">_RAW</span> <span class="o">/</span> <span class="n">f</span>
 </span><span id="main-49"><a href="#main-49"><span class="linenos">49</span></a>        <span class="k">try</span><span class="p">:</span>
 </span><span id="main-50"><a href="#main-50"><span class="linenos">50</span></a>            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 </span><span id="main-51"><a href="#main-51"><span class="linenos">51</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>

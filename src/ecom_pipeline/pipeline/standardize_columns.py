@@ -14,24 +14,23 @@ Why this step exists:
 
 import pandas as pd
 
-from ecom_pipeline.utils.io import interim_dir, raw_dir, repo_root, write_parquet
+from ecom_pipeline.utils.io import interim_dir, raw_dir, write_parquet
 
 # -------------------------
 # Directory configuration
 # -------------------------
 
-# Anchor execution to repo root (independent of working directory)
-REPO_ROOT = repo_root()
-
+# Runtime-only helpers. Prefixed with _ so they are hidden from pdoc API docs.
+# They resolve to local machine paths and should never appear in generated
+# documentation.
 # Immutable input data
-RAW = raw_dir()
+_RAW = raw_dir()
 
 # Lightly cleaned outputs (still one file per source table)
-
-INTERIM = interim_dir()
+_INTERIM = interim_dir()
 
 # Ensure the interim directory exists so the script is re-runnable
-# INTERIM.mkdir(parents=True, exist_ok=True)
+_INTERIM.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------
@@ -91,8 +90,8 @@ def main() -> None:
     # - If any table fails to read/write, we stop to avoid invalid interim state.
 
     for filename in FILES:
-        in_path = RAW / filename
-        out_path = INTERIM / filename.replace(".csv", ".parquet")
+        in_path = _RAW / filename
+        out_path = _INTERIM / filename.replace(".csv", ".parquet")
 
         try:
             df = pd.read_csv(in_path)

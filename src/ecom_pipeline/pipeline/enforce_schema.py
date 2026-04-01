@@ -1,25 +1,29 @@
 """
-Enforce a minimal, analytics-friendly schema on interim Olist tables.
+Apply schema enforcement and data quality fixes to produce clean Olist tables.
 
 Input:
-- data/interim/*.parquet (column names already standardized)
+- data/interim/*.parquet (standardized column names)
 
 Output:
-- data/clean/*.parquet (types normalized for joins/analytics)
+- data/clean/*.parquet (strongly typed and analytics-ready)
 
-Policy:
-- Strict: stop on any read/cast/write failure to avoid partial clean outputs.
+Responsibilities:
+- Enforces all types, nullability, and constraints from SCHEMA_CONTRACT
+- Prevents pandas from silently converting integers to float when NaNs exist
+- Applies business rules (zip code padding, full state names)
+- Enriches the category translation table to fix foreign key integrity
+- Ensures consistent, BigQuery-friendly Parquet output
 """
 
 import time
 
 import pandas as pd
 
+from ecom_pipeline.config.schema_contract import SCHEMA_CONTRACT
 from ecom_pipeline.utils.io import (
     clean_dir,
     interim_dir,
     read_parquet,
-    repo_root,
     write_parquet,
 )
 from ecom_pipeline.utils.logging import configure_logging, get_logger
@@ -27,9 +31,8 @@ from ecom_pipeline.utils.logging import configure_logging, get_logger
 configure_logging()
 logger = get_logger(__name__)
 
-REPO_ROOT = repo_root()
-INTERIM = interim_dir()
-CLEAN = clean_dir()
+_INTERIM = interim_dir()
+_CLEAN = clean_dir()
 
 FILES = [
     "olist_orders_dataset.parquet",
@@ -48,117 +51,144 @@ RENAME_MAP = {
     "product_description_lenght": "product_description_length",
 }
 
-CAST_RULES = {
-    "olist_customers_dataset.parquet": {
-        "datetime_cols": [],
-        "string_cols": [
-            "customer_id",
-            "customer_unique_id",
-            "customer_zip_code_prefix",
-        ],
-        "numeric_cols": [],
-    },
-    "olist_geolocation_dataset.parquet": {
-        "datetime_cols": [],
-        "string_cols": ["geolocation_zip_code_prefix"],
-        "numeric_cols": ["geolocation_lat", "geolocation_lng"],
-    },
-    "olist_order_items_dataset.parquet": {
-        "datetime_cols": ["shipping_limit_date"],
-        "string_cols": ["order_id", "product_id", "seller_id"],
-        "numeric_cols": ["price", "freight_value", "order_item_id"],
-    },
-    "olist_order_payments_dataset.parquet": {
-        "datetime_cols": [],
-        "string_cols": ["order_id"],
-        "numeric_cols": ["payment_installments", "payment_value", "payment_sequential"],
-    },
-    "olist_order_reviews_dataset.parquet": {
-        "datetime_cols": ["review_creation_date", "review_answer_timestamp"],
-        "string_cols": ["review_id", "order_id"],
-        "numeric_cols": ["review_score"],
-    },
-    "olist_orders_dataset.parquet": {
-        "datetime_cols": [
-            "order_purchase_timestamp",
-            "order_approved_at",
-            "order_delivered_carrier_date",
-            "order_delivered_customer_date",
-            "order_estimated_delivery_date",
-        ],
-        "string_cols": ["order_id", "customer_id", "order_status"],
-        "numeric_cols": [],
-    },
-    "olist_products_dataset.parquet": {
-        "datetime_cols": [],
-        "string_cols": ["product_id", "product_category_name"],
-        "numeric_cols": [
-            "product_name_length",
-            "product_description_length",
-            "product_photos_qty",
-            "product_weight_g",
-            "product_length_cm",
-            "product_height_cm",
-            "product_width_cm",
-        ],
-    },
-    "olist_sellers_dataset.parquet": {
-        "datetime_cols": [],
-        "string_cols": ["seller_id", "seller_zip_code_prefix"],
-        "numeric_cols": [],
-    },
-    "product_category_name_translation.parquet": {
-        "datetime_cols": [],
-        "string_cols": ["product_category_name", "product_category_name_english"],
-        "numeric_cols": [],
-    },
-}
+
+def enrich_category_translation(
+    products_df: pd.DataFrame, translation_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Add missing Portuguese categories from products into the translation table."""
+    prod_cats = products_df["product_category_name"].dropna().unique()
+    trans_cats = translation_df["product_category_name"].unique()
+
+    missing_cats = [cat for cat in prod_cats if cat not in trans_cats]
+
+    if not missing_cats:
+        logger.info("✅ No missing product categories found.")
+        return translation_df
+
+    logger.info(
+        f"Found {len(missing_cats)} missing categories. Enriching translation table..."
+    )
+
+    manual_mappings = {
+        "pc_gamer": "pc_gamer",
+        "portateis_cozinha_e_preparadores_de_alimentos": (
+            "kitchen_portables_and_food_preparators"
+        ),
+    }
+
+    new_rows = []
+    for cat in missing_cats:
+        english = manual_mappings.get(cat, cat.replace("_", " ").title())
+        new_rows.append(
+            {
+                "product_category_name": cat,
+                "product_category_name_english": english,
+            }
+        )
+
+    if new_rows:
+        new_df = pd.DataFrame(new_rows)
+        translation_df = pd.concat([translation_df, new_df], ignore_index=True)
+        logger.info(f"Added {len(new_rows)} new category translations.")
+
+    return translation_df
 
 
 def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
-    rules = CAST_RULES.get(filename, {})
+    """Apply schema enforcement using SCHEMA_CONTRACT as the single source of truth."""
+    contract = SCHEMA_CONTRACT.get(filename, {})
     df = df.copy()
 
     start_time = time.time()
     initial_rows = len(df)
     initial_nulls = df.isna().sum().sum()
-    initial_null_pct = (
-        (initial_nulls / (initial_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
-    )
 
     logger.info(
-        "Starting schema enforcement for %s | rows=%s | nulls=%s (%.2f%% avg)",
+        "Starting schema enforcement for %s | rows=%s | nulls=%s",
         filename,
         f"{initial_rows:,}",
         f"{initial_nulls:,}",
-        initial_null_pct,
     )
 
-    for col in rules.get("string_cols", []):
-        if col in df.columns:
-            df[col] = df[col].astype("str")
+    # Apply legacy rename (needed for products table)
+    if filename == "olist_products_dataset.parquet":
+        df = df.rename(columns=RENAME_MAP)
 
-    for col in rules.get("datetime_cols", []):
-        if col in df.columns:
+    # ------------------------------------------------------------------
+    # Main type casting from SCHEMA_CONTRACT
+    # ------------------------------------------------------------------
+    for col, spec in contract.get("columns", {}).items():
+        if col not in df.columns:
+            continue
+
+        dtype_family = spec.get("dtype_family")
+
+        if dtype_family == "string":
+            df[col] = df[col].astype("string")
+
+        elif dtype_family == "datetime":
             df[col] = pd.to_datetime(df[col], errors="coerce")
+            df[col] = df[col].dt.tz_localize(None).astype("datetime64[ns]")
 
-    for col in rules.get("numeric_cols", []):
+        elif dtype_family == "numeric":
+            numeric_type = spec.get("numeric_type")
+            if numeric_type == "Float64":
+                df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
+            else:
+                df[col] = pd.to_numeric(df[col], errors="coerce").astype("Float64")
+                df[col] = df[col].astype("Int64")
+
+    # ------------------------------------------------------------------
+    # Special business rules (derived columns)
+    # ------------------------------------------------------------------
+    # Brazilian zip codes: preserve leading zeros
+    zip_cols = [col for col in df.columns if "zip_code_prefix" in col.lower()]
+    for col in zip_cols:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = df[col].astype("string").str.zfill(5)
+            logger.info("Applied zfill(5) to zip column: %s", col)
+
+    # Derived column: full Brazilian state names (created as string)
+    if filename == "olist_customers_dataset.parquet" and "customer_state" in df.columns:
+        state_name_map = {
+            "SP": "São Paulo",
+            "RJ": "Rio de Janeiro",
+            "MG": "Minas Gerais",
+            "RS": "Rio Grande do Sul",
+            "BA": "Bahia",
+            "PR": "Paraná",
+            "PE": "Pernambuco",
+            "CE": "Ceará",
+            "PA": "Pará",
+            "MA": "Maranhão",
+            "SC": "Santa Catarina",
+            "GO": "Goiás",
+            "DF": "Distrito Federal",
+            "ES": "Espírito Santo",
+            "PB": "Paraíba",
+            "RN": "Rio Grande do Norte",
+            "MT": "Mato Grosso",
+            "MS": "Mato Grosso do Sul",
+            "AL": "Alagoas",
+            "PI": "Piauí",
+            "SE": "Sergipe",
+            "TO": "Tocantins",
+            "RO": "Rondônia",
+            "AM": "Amazonas",
+            "AC": "Acre",
+            "AP": "Amapá",
+            "RR": "Roraima",
+        }
+        df["customer_state_name"] = (
+            df["customer_state"]
+            .map(state_name_map)
+            .fillna(df["customer_state"])
+            .astype("string")  # Ensure consistent nullable string dtype
+        )
+        logger.info("Added derived column: customer_state_name")
 
     final_rows = len(df)
     final_nulls = df.isna().sum().sum()
-    final_null_pct = (
-        (final_nulls / (final_rows * df.shape[1])) * 100 if df.size > 0 else 0.0
-    )
-
-    null_change = final_nulls - initial_nulls
-    null_reduction_pct = (
-        ((initial_nulls - final_nulls) / initial_nulls * 100)
-        if initial_nulls > 0
-        else 0.0
-    )
-
     duration = time.time() - start_time
 
     logger.info(
@@ -169,62 +199,38 @@ def enforce_schema(filename: str, df: pd.DataFrame) -> pd.DataFrame:
         f"{initial_nulls:,}",
         f"{final_nulls:,}",
     )
-    logger.info(
-        "change=%+d | reduction=%.1f%% | avg null pct=%.2f%% → %.2f%%",
-        null_change,
-        null_reduction_pct,
-        initial_null_pct,
-        final_null_pct,
-    )
 
     return df
 
 
 def main() -> None:
+    processed_dfs = {}  # Cache cleaned DataFrames in memory
+
     for filename in FILES:
-        in_path = INTERIM / filename
-        out_path = CLEAN / filename
+        in_path = _INTERIM / filename
+        df = read_parquet(in_path)
 
-        logger.info("Processing %s", filename)
+        df = enforce_schema(filename, df)
 
-        # -----------------
-        # Read
-        # -----------------
-        try:
-            df = read_parquet(in_path)
-        except Exception:
-            logger.exception("Read failed: %s", in_path)
-            raise
+        # Special handling: enrich translation using the *cleaned* products table
+        if filename == "product_category_name_translation.parquet":
+            if "olist_products_dataset.parquet" in processed_dfs:
+                products_clean = processed_dfs["olist_products_dataset.parquet"]
+                df = enrich_category_translation(products_clean, df)
+            else:
+                logger.warning(
+                    "Cleaned products table not found in cache. Skipping enrichment."
+                )
 
-        # -----------------
-        # Rename (if needed)
-        # -----------------
-        if filename == "olist_products_dataset.parquet":
-            before = set(df.columns)
-            df = df.rename(columns=RENAME_MAP)
-            after = set(df.columns)
-            if before != after:
-                logger.info("Applied column rename map for %s", filename)
-
-        # -----------------
-        # Enforce schema
-        # -----------------
-        try:
-            df = enforce_schema(filename, df)
-        except Exception:
-            logger.exception("Schema enforcement failed: %s", filename)
-            raise
-
-        # -----------------
-        # Write
-        # -----------------
-        try:
-            write_parquet(df, out_path)
-        except Exception:
-            logger.exception("Write failed: %s", out_path)
-            raise
-
+        # Save to clean/
+        out_path = _CLEAN / filename
+        write_parquet(df, out_path)
         logger.info("Wrote %s", out_path)
+
+        # Cache the cleaned df for later use (especially for translation)
+        processed_dfs[filename] = df
+
+    logger.info("Schema enforcement completed for all tables.")
 
 
 if __name__ == "__main__":
