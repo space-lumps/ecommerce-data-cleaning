@@ -26,3 +26,13 @@ jobs:
         env:
           ECOM_RAW_DIR: data/samples
         run: uv run pytest
+
+      - name: Upload reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-reports
+          path: |
+            reports/
+            /tmp/*/reports/   # in case it uses temp dir
+          retention-days: 7

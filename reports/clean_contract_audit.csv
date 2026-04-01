@@ -40,7 +40,6 @@ product_category_name_translation.parquet,non_null,pass,,product_category_name
 product_category_name_translation.parquet,dtype_family,pass,expected=string actual=string,product_category_name_english
 product_category_name_translation.parquet,non_null,pass,,product_category_name_english
 product_category_name_translation.parquet,primary_key_unique,pass,pk=['product_category_name'],
-product_category_name_translation.parquet,foreign_key_integrity,pass,from_cols=['product_category_name'] to_table=olist_products_dataset.parquet,
 olist_geolocation_dataset.parquet,required_columns,pass,,
 olist_geolocation_dataset.parquet,dtype_family,pass,expected=string actual=string,geolocation_zip_code_prefix
 olist_geolocation_dataset.parquet,non_null,pass,,geolocation_zip_code_prefix

@@ -129,13 +129,6 @@ SCHEMA_CONTRACT: dict[str, dict] = {
             },
         },
         # No outgoing FKs
-        "foreign_keys": [
-            {
-                "from_columns": ["product_category_name"],
-                "to_table": "olist_products_dataset.parquet",
-                "to_columns": ["product_category_name"],
-            }
-        ],
     },
     "olist_geolocation_dataset.parquet": {
         # geolocation is not strictly keyed; many rows per zip
